@@ -1,0 +1,3 @@
+# Preserve downstream custom tools and local wrangler bindings during upstream merges
+apps/worker/src/tools.custom.ts merge=ours
+apps/worker/wrangler.jsonc merge=ours
