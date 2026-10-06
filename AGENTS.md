@@ -62,19 +62,6 @@
 │   ├── 821.repobot/                     # DevOps Domain & Git Control Unit (@camp_candor/821.repobot)
 │   └── 822.cloudflare/                  # Cloudflare Management Unit (@camp_candor/822.cloudflare)
 │
-├── series/                              # 📝 Hand-Authored Storyworld Instances (Git-for-Canon Source)
-│   └── [series-slug]/                   # Concrete narrative setting (e.g., under-the-floorboards)
-│       ├── series.config.json           # Series axioms & modal parameters
-│       ├── characters/                  # Byte-0 YAML frontmatter dossiers
-│       ├── grievances/                  # Debt nodes & escalation bounds
-│       ├── locations/                   # Spatial topology & acoustic damping anchors
-│       └── possessions/                 # Tracked items & weight classes
-│
-└── compiled/                            # 📦 Root Machine Snapshots (Decoupled Output Root)
-    └── [series-slug]/                   # Generated canon artifacts namespaced by series
-        ├── bible-state.json             # Canonical zero-drift HEAD snapshot
-        └── bible-state_<TIMESTAMP>.json # Windows-safe timestamped historical immutable snapshot
-
 ```
 
 ### 2.1 Workspace Roles & Modification Permissions
@@ -102,82 +89,27 @@ Redux/Buzzer Units, CI Inspection, PR checks, Git tools.
 | | `packages/822.cloudflare` | `@camp_candor/822.cloudflare` | **YES** |
 Cloudflare worker status inspection and target mode toggles.
 
-| | `series/*` | N/A | **YES** | Hand-authored narrative truth files. Must
-strictly obey the Byte-0 Frontmatter law.
-
-| | `compiled/*` | N/A | **GENERATED** | Machine snapshots emitted by
-`001.lore`. Never edit by hand.
-
 |
 
 ---
 
-## 3. The Narrative Legislative Protocol (`packages/001.lore`)
+## 3. DevOps Control Plane ($S_{\text{clean}}$ Protocol)
 
-`001.lore` establishes **The Law** of narrative worlds. Probabilistic LLMs,
-render engines, and simulation workers have zero authority over world truth,
-somatic possibility, or historical facts.
+The autonomous agent must operate strictly within the bounds of deterministic
+CI/CD and Git protocols.
 
-### 3.1 The Byte-0 Frontmatter Invariant
+### 3.1 S_clean State Invariant
 
-Every hand-authored Markdown file in `series/` must begin its YAML frontmatter
-strictly at **Byte 0** (`---`) without leading whitespace, empty lines, or UTF-8
-BOM markers. Pass 1 of the compiler must immediately halt with a fatal error if
-Byte 0 is violated.
+Before provisioning any ephemeral branch, the agent must evaluate the current
+repository state ($S_{\text{clean}}$). Direct modification of main branch code
+without first establishing an $S_{\text{clean}}$ anchor via `get_commit_sha` is
+forbidden.
 
-### 3.2 Top-Level Dual-Emission Protocol
+### 3.2 TypeBox Schema Integrity
 
-All compilation outputs must be emitted to the root-level directory
-`<rootDir>/compiled/<seriesSlug>/`. Each compilation pass writes two files:
-
-1. **`bible-state.json` (Canonical HEAD):** Contains the NFC-normalized JSON
-   payload stamped with the cryptographic SHA-256 state hash
-   ($H_{\text{root}}$). Used by downstream engines and verified by CI.
-
-2. **`bible-state_<TIMESTAMP>.json` (Historical Archive):** An immutable
-   point-in-time snapshot stamped with an ISO timestamp formatted for
-   cross-platform and Windows filesystem safety (colons replaced with dashes:
-   `YYYY-MM-DDTHH-mm-ssZ`).
-
-3. **Git Provenance Tracking:** Both `bible-state.json` and timestamped
-   snapshots must be committed to Git history. Root `.gitignore` must **never**
-   ignore timestamped compiled snapshots.
-
-4. **Zero Ambient Clock Leakage:** The calculated SHA-256 state hash
-   ($H_{\text{root}}$) must remain 100% deterministic. `Date.now()` or ambient
-   clock calls are strictly prohibited within the hashed payload and may only
-   appear in the physical archive filename.
-
----
-
-## 4. Referential Integrity & Dangling Pointer Invariants
-
-Pass 2 of `001.lore` executes a comprehensive graph audit. A compilation failure
-must trigger immediately if any pointer cannot be resolved:
-
-- **Spatial Resolution:** If `character.location` is declared, it must resolve
-  to an existing ID in `entities.locations`.
-
-- **Logistical Equip Slots:** Every item declared in a character's `worn`,
-  `held`, `carried`, or `cached` arrays must resolve to an existing ID in
-  `entities.possessions`.
-
-- **Epistemic Debts & Social Ties:** Every target referenced in
-  `character.epistemic.strings_held_over` or as a key in
-  `character.epistemic.leverage_strings` must resolve to an active character ID.
-
-- **Topological Adjacency:** Every ID listed in `location.adjacent_locations`
-  must exist in `entities.locations`.
-
-- **Grievance Participants:** Every ID listed in
-  `grievance.participants_primary` or `grievance.participants_can_involve` must
-  resolve to an active character ID.
-
-- **Acyclic Escalation Trees:** Every ID listed in
-  `grievance.spawns_on_max_escalation` must exist in `entities.grievances`. Pass
-  2 runs a Depth-First Search (DFS) traversal over the escalation graph;
-  circular chains (e.g., $A \to B \to A$) must be rejected with a fatal cycle
-  exception.
+All AI-generated schemas for tool calling and data validation must strictly
+enforce `additionalProperties: false`. Open-ended schema definitions are
+rejected.
 
 ---
 
