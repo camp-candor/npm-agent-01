@@ -13,7 +13,7 @@ const REDACTION_PATTERNS: Array<[RegExp, string]> = [
   [/ghp_[a-zA-Z0-9]{36,255}/g, '[REDACTED_GH_TOKEN]'],
   [/github_pat_[a-zA-Z0-9_]{82}/g, '[REDACTED_GH_PAT]'],
   [/cfut_[a-zA-Z0-9_-]{32,255}/g, '[REDACTED_CF_GATEWAY_TOKEN]'],
-  [/xox[baprs]-[0-9a-zA-Z]{10,48}/g, '[REDACTED_SLACK_TOKEN]'],
+  [/xox[baprs]-[0-9a-zA-Z-]{10,64}/g, '[REDACTED_SLACK_TOKEN]'],
   [
     /-----BEGIN [A-Z ]+PRIVATE KEY[\s\S]+?-----END [A-Z ]+PRIVATE KEY-----/g,
     '[REDACTED_PRIVATE_KEY]',
@@ -41,7 +41,12 @@ export function redactSecrets(input: string): string {
 }
 
 /**
- * Recursively redacts sensitive strings within nested objects and arrays.
+ * Canonical alias for redactSecrets adhering to audit ledger specifications.
+ */
+export const redactSensitiveData = redactSecrets
+
+/**
+ * Recursively redacts sensitive strings and keys within nested objects and arrays.
  */
 export function redactObject<T>(input: T): T {
   if (typeof input === 'string') {
@@ -58,9 +63,12 @@ export function redactObject<T>(input: T): T {
 
   const cleanObj: Record<string, any> = {}
   for (const [key, value] of Object.entries(input as Record<string, any>)) {
-    // Redact key values if the key itself matches known credential field names
-    if (/^(?:secret|token|password|apiKey|authorization|auth)$/i.test(key) && typeof value === 'string') {
-      cleanObj[key] = '[REDACTED_FIELD]'
+    if (/^(?:secret|token|password|apiKey|authorization|auth)$/i.test(key)) {
+      if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+        cleanObj[key] = redactObject(value)
+      } else {
+        cleanObj[key] = '[REDACTED_FIELD]'
+      }
     } else {
       cleanObj[key] = redactObject(value)
     }

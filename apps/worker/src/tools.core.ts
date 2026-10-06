@@ -1,3 +1,4 @@
+// apps/worker/src/tools.core.ts
 import type { AgentEnv, AgentTool } from '@funtuantw/pi-agent-cf'
 import { Type, type Static } from '@sinclair/typebox'
 import { redactSecrets } from './redaction.js'

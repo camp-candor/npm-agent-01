@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { redactSecrets, redactObject } from '../../src/redaction.js'
+import {
+  redactSecrets,
+  redactSensitiveData,
+  redactObject,
+} from '../../src/redaction.js'
 
 describe('In-Flight Secret Redaction Firewall (apps/worker)', () => {
   describe('redactSecrets (String Scrubber)', () => {
@@ -62,6 +66,11 @@ describe('In-Flight Secret Redaction Firewall (apps/worker)', () => {
       expect(result).not.toContain('super_secret_value_123')
     })
 
+    it('supports canonical alias redactSensitiveData', () => {
+      const raw = 'Token: ghp_111122223333444455556666777788889999'
+      expect(redactSensitiveData(raw)).toBe('Token: [REDACTED_GH_TOKEN]')
+    })
+
     it('returns non-string values or clean strings unmodified', () => {
       expect(redactSecrets('')).toBe('')
       expect(redactSecrets('Everything is operational.')).toBe(
@@ -75,7 +84,7 @@ describe('In-Flight Secret Redaction Firewall (apps/worker)', () => {
       const payload = {
         user: 'octocat',
         auth: {
-          apiKey: 'secret_key_abc',
+          apiKey: 'sensitive_key_abc',
           nested: {
             token: 'ghp_111122223333444455556666777788889999',
             normal: 'safe_value',
