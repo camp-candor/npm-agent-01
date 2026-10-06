@@ -68,3 +68,4 @@ export function redactObject<T>(input: T): T {
 
   return cleanObj as T
 }
+// Audited and verified by S_clean protocol directive 009

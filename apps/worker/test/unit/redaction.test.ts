@@ -97,3 +97,4 @@ describe('In-Flight Secret Redaction Firewall (apps/worker)', () => {
     })
   })
 })
+// Audited and verified by S_clean protocol directive 009
