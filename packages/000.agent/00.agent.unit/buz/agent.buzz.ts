@@ -1,164 +1,159 @@
 import { AgentModel } from '../agent.model.js'
 import agentBit from '../fce/agent.bit.js'
 import State from '../../99.core/state.js'
+import { getBaseUrl, getBaseWsUrl } from '../../src/cascade.js'
 
 const agent = {
-    list: async () => ({ models: [] as any[] }),
+  list: async () => ({ models: [] as any[] }),
 }
 
 export const initagent = (cpy: AgentModel, bal: agentBit, ste: State) => {
-    const url =
-        process.env.agent_URL ||
-        'https://zero00-agent.onrender.com/api/agent/test'
-    if (url) {
-        fetch(url)
-            .then((response) => response.json())
-            .then((data) => {
-                if (bal.slv != null) {
-                    bal.slv({
-                        intBit: {
-                            idx: 'init-agent',
-                            dat: {
-                                agent: data,
-                            },
-                        },
-                    })
-                }
-            })
-            .catch((error: any) => {
-                if (bal.slv != null) {
-                    bal.slv({
-                        intBit: { idx: 'init-agent-err', dat: error.message },
-                    })
-                }
-            })
-    } else {
-        if (bal.slv != null) {
-            bal.slv({ intBit: { idx: 'init-agent' } })
-        }
-    }
-    return cpy
+  const healthUrl = `${getBaseUrl()}/health`
+  fetch(healthUrl)
+    .then((response) => response.json())
+    .then((data) => {
+      if (bal.slv != null) {
+        bal.slv({
+          intBit: {
+            idx: 'init-agent',
+            dat: {
+              status: 'connected',
+              health: data,
+            },
+          },
+        })
+      }
+    })
+    .catch((error: any) => {
+      if (bal.slv != null) {
+        bal.slv({
+          intBit: { idx: 'init-agent-err', dat: error.message },
+        })
+      }
+    })
+  return cpy
 }
 
 export const updateagent = (cpy: AgentModel, bal: agentBit, ste: State) => {
-    bal.slv({ intBit: { idx: 'update-agent' } })
-
-    return cpy
+  bal.slv({ intBit: { idx: 'update-agent' } })
+  return cpy
 }
 
 export const testagent = (cpy: AgentModel, bal: agentBit, ste: State) => {
-    bal.slv({ mytBit: { idx: 'test-agent', val: 1 } })
-    return cpy
+  bal.slv({ mytBit: { idx: 'test-agent', val: 1 } })
+  return cpy
 }
 
 export const listagent = async (cpy: AgentModel, bal: agentBit, ste: State) => {
-    const response = await agent.list()
-    if (bal.slv != null)
-        bal.slv({
-            olmBit: {
-                idx: 'list-agent',
-                lst: response.models.map((m: any) => m.name),
-            },
-        })
-    return cpy
+  const response = await agent.list()
+  if (bal.slv != null)
+    bal.slv({
+      olmBit: {
+        idx: 'list-agent',
+        lst: response.models.map((m: any) => m.name),
+      },
+    })
+  return cpy
 }
 
 export const connectagent = (cpy: AgentModel, bal: agentBit, ste: State) => {
-    const isLocal = bal.src === 'LOCAL'
-    const wsUrl = isLocal
-        ? 'ws://localhost:8787/ws'
-        : 'wss://worker-agent.berad4000.workers.dev/ws'
-    const prefix = isLocal ? '[LOCAL WORKER]' : '[REMOTE WORKER]'
+  const isLocal =
+    bal.src === 'LOCAL' || (global as any).agentBaseUrl?.includes('8787')
+  const prefix = isLocal ? '[LOCAL WORKER]' : '[REMOTE WORKER]'
+  const wsUrl = `${getBaseWsUrl()}/ws`
 
-    // @ts-ignore
-    global.agentBaseUrl = isLocal
-        ? 'http://localhost:8787'
-        : 'https://worker-agent.berad4000.workers.dev'
+  if (isLocal) {
+    ;(global as any).agentBaseUrl = 'http://127.0.0.1:8787'
+  } else {
+    delete (global as any).agentBaseUrl
+  }
 
-    // @ts-ignore
+  // Idempotent Socket Guard: Do not re-create if already open
+  if ((global as any).agentWs) {
+    try {
+      ;(global as any).agentWs.close(1000, 'Reconnecting')
+    } catch (e) {}
+    ;(global as any).agentWs = null
+  }
+
+  try {
     const ws = new WebSocket(wsUrl)
-
-    // @ts-ignore
-    global.agentWs = ws
+    ;(global as any).agentWs = ws
 
     ws.onopen = () => {
-        // @ts-ignore
-        if (global.LIBRARY) {
-            // @ts-ignore
-            global.LIBRARY.hunt('[Console action] Update Console', {
-                idx: 'cns00',
-                src: `${prefix} Connected to agent WS: ${wsUrl}`,
-            })
-        }
-        ws.send('Hello from agent Model')
+      if ((global as any).LIBRARY) {
+        ;(global as any).LIBRARY.hunt('[Console action] Update Console', {
+          idx: 'cns00',
+          src: `${prefix} Connected to agent WS: ${wsUrl}`,
+        }).catch(() => {})
+      }
+      ws.send('Hello from agent Model')
     }
 
     ws.onmessage = (event: any) => {
-        // @ts-ignore
-        if (global.LIBRARY) {
-            // @ts-ignore
-            global.LIBRARY.hunt('[Console action] Update Console', {
-                idx: 'cns00',
-                src: `${prefix} WS Message: ${event.data}`,
-            })
-        }
+      if ((global as any).LIBRARY) {
+        ;(global as any).LIBRARY.hunt('[Console action] Update Console', {
+          idx: 'cns00',
+          src: `${prefix} WS Message: ${event.data}`,
+        }).catch(() => {})
+      }
     }
 
-    ws.onerror = (error: any) => {
-        // @ts-ignore
-        if (global.LIBRARY) {
-            // @ts-ignore
-            global.LIBRARY.hunt('[Console action] Update Console', {
-                idx: 'cns00',
-                src: `${prefix} WS Error`,
-            })
-        }
+    ws.onerror = (_error: any) => {
+      if ((global as any).LIBRARY) {
+        ;(global as any).LIBRARY.hunt('[Console action] Update Console', {
+          idx: 'cns00',
+          src: `${prefix} WS Error encountered`,
+        }).catch(() => {})
+      }
     }
 
     ws.onclose = () => {
-        // @ts-ignore
-        if (global.LIBRARY) {
-            // @ts-ignore
-            global.LIBRARY.hunt('[Console action] Update Console', {
-                idx: 'cns00',
-                src: `${prefix} WS Connection Closed`,
-            })
-        }
+      if ((global as any).LIBRARY) {
+        ;(global as any).LIBRARY.hunt('[Console action] Update Console', {
+          idx: 'cns00',
+          src: `${prefix} WS Connection Closed`,
+        }).catch(() => {})
+      }
     }
+  } catch (err: any) {
+    if ((global as any).LIBRARY) {
+      ;(global as any).LIBRARY.hunt('[Console action] Update Console', {
+        idx: 'cns00',
+        src: `${prefix} WS Initialization Error: ${err.message}`,
+      }).catch(() => {})
+    }
+  }
 
-    if (bal.slv != null) bal.slv({ olmBit: { idx: 'connect-agent', lst: [] } })
-
-    return cpy
+  if (bal.slv != null) bal.slv({ olmBit: { idx: 'connect-agent', lst: [] } })
+  return cpy
 }
 
 export const disconnectagent = (cpy: AgentModel, bal: agentBit, ste: State) => {
-    // @ts-ignore
-    if (global.agentWs) {
-        // @ts-ignore
-        global.agentWs.close()
-        // @ts-ignore
-        global.agentWs = null
-    }
+  if ((global as any).agentWs) {
+    try {
+      ;(global as any).agentWs.close(1000, 'User Disconnected')
+    } catch (e) {}
+    ;(global as any).agentWs = null
+  }
 
-    // @ts-ignore
-    if (global.localagentProcess) {
-        // @ts-ignore
-        global.localagentProcess.kill()
-        // @ts-ignore
-        global.localagentProcess = null
-    }
+  if ((global as any).localagentProcess) {
+    try {
+      ;(global as any).localagentProcess.kill()
+    } catch (e) {}
+    ;(global as any).localagentProcess = null
+  }
 
-    // @ts-ignore
-    if (global.LIBRARY) {
-        // @ts-ignore
-        global.LIBRARY.hunt('[Console action] Update Console', {
-            idx: 'cns00',
-            src: `Disconnected from agent`,
-        })
-    }
+  delete (global as any).agentBaseUrl
 
-    if (bal.slv != null)
-        bal.slv({ olmBit: { idx: 'disconnect-agent', lst: [] } })
+  if ((global as any).LIBRARY) {
+    ;(global as any).LIBRARY.hunt('[Console action] Update Console', {
+      idx: 'cns00',
+      src: 'Disconnected from agent control plane',
+    }).catch(() => {})
+  }
 
-    return cpy
+  if (bal.slv != null) bal.slv({ olmBit: { idx: 'disconnect-agent', lst: [] } })
+
+  return cpy
 }

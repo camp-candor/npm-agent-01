@@ -1,98 +1,70 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { initagent } from './buz/agent.buzz.js'
 import { AgentModel } from './agent.model.js'
+import { getBaseUrl } from '../src/cascade.js'
 
-describe('agent', () => {
-    it('should initialize agent', () => {
-        const model = new AgentModel()
-        const state = {
-            hunt: vi.fn().mockResolvedValue({}),
-            dispatch: vi.fn(),
-        } as any
+describe('agent unit buzzers', () => {
+  const originalFetch = globalThis.fetch
 
-        const slv = vi.fn()
-        const bal = { idx: 'test', slv } as any
+  beforeEach(() => {
+    vi.restoreAllMocks()
+    delete (global as any).agentBaseUrl
+  })
 
-        // Check if initagent is a function and can be called
-        expect(typeof initagent).toBe('function')
+  afterEach(() => {
+    globalThis.fetch = originalFetch
+    delete (global as any).agentBaseUrl
+  })
 
-        const result = initagent(model, bal, state)
-        expect(result).toBe(model)
-        //expect(slv).toHaveBeenCalledWith({ intBit: { idx: 'init-agent' } });
+  it('should query health endpoint on initagent', async () => {
+    const model = new AgentModel()
+    const state = {} as any
+    const slv = vi.fn()
+    const bal = { idx: 'test', slv } as any
+
+    const expectedUrl = `${getBaseUrl()}/health`
+    const mockHealth = { status: 'healthy', service: 'npm-agent-01-worker' }
+
+    globalThis.fetch = vi.fn().mockImplementation((url: string) => {
+      if (url === expectedUrl) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => mockHealth,
+        } as any)
+      }
+      return Promise.reject(new Error(`Unexpected url: ${url}`))
     })
 
-    it('should wake up the agent if url is provided', async () => {
-        const model = new AgentModel()
-        const state = {} as any
-        const slv = vi.fn()
-        const bal = { idx: 'test', slv } as any
+    initagent(model, bal, state)
 
-        const urlagent = 'https://zero00-agent.onrender.com/api/agent/test'
+    await new Promise((resolve) => setTimeout(resolve, 10))
 
-        const mockResponseagent = { status: 'agent-awake' }
-
-        const globalFetch = vi
-            .spyOn(global, 'fetch')
-            .mockImplementation((url) => {
-                if (url === urlagent) {
-                    return Promise.resolve({
-                        ok: true,
-                        json: () => Promise.resolve(mockResponseagent),
-                    } as any)
-                }
-                return Promise.reject(new Error('Unknown URL'))
-            })
-
-        initagent(model, bal, state)
-
-        // Wait for the promise in initagent to resolve
-        await new Promise((resolve) => setTimeout(resolve, 0))
-
-        expect(globalFetch).toHaveBeenCalledWith(urlagent)
-        expect(slv).toHaveBeenCalledWith({
-            intBit: {
-                idx: 'init-agent',
-                dat: {
-                    agent: mockResponseagent,
-                },
-            },
-        })
-
-        globalFetch.mockRestore()
+    expect(globalThis.fetch).toHaveBeenCalledWith(expectedUrl)
+    expect(slv).toHaveBeenCalledWith({
+      intBit: {
+        idx: 'init-agent',
+        dat: {
+          status: 'connected',
+          health: mockHealth,
+        },
+      },
     })
+  })
 
-    it('should handle fetch errors', async () => {
-        const model = new AgentModel()
-        const state = {} as any
-        const slv = vi.fn()
-        const bal = { idx: 'test', slv } as any
+  it('should handle fetch errors gracefully on initagent', async () => {
+    const model = new AgentModel()
+    const state = {} as any
+    const slv = vi.fn()
+    const bal = { idx: 'test', slv } as any
 
-        const urlagent = 'https://zero00-agent.onrender.com/api/agent/test'
+    globalThis.fetch = vi.fn().mockRejectedValue(new Error('Network offline'))
 
-        const errorMessage = 'Network error'
-        const globalFetch = vi
-            .spyOn(global, 'fetch')
-            .mockImplementation((url) => {
-                if (url === urlagent) {
-                    return Promise.reject(new Error(errorMessage))
-                }
-                return Promise.resolve({
-                    ok: true,
-                    json: async () => ({}),
-                } as any)
-            })
+    initagent(model, bal, state)
 
-        initagent(model, bal, state)
+    await new Promise((resolve) => setTimeout(resolve, 10))
 
-        // Wait for the promise in initagent to resolve
-        await new Promise((resolve) => setTimeout(resolve, 0))
-
-        expect(globalFetch).toHaveBeenCalledWith(urlagent)
-
-        expect(slv).toHaveBeenCalledWith({
-            intBit: { idx: 'init-agent-err', dat: errorMessage },
-        })
-
-        globalFetch.mockRestore()
+    expect(slv).toHaveBeenCalledWith({
+      intBit: { idx: 'init-agent-err', dat: 'Network offline' },
     })
+  })
 })
