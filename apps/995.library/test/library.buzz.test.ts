@@ -16,7 +16,7 @@ function makeModel() {
 const ste = null as any
 
 test.serial(
-    'flatLibrary — writes flattened code to root data/flat, not apps/data',
+    'flatLibrary -- writes flattened code to root data/flat, not apps/data',
     async (t) => {
         const bal = makeBal()
         await flatLibrary(makeModel(), bal, ste)
@@ -26,7 +26,6 @@ test.serial(
         t.is(result.libBit.idx, 'flat-library')
 
         const relativeOutputPath = result.libBit.src
-        // Must start with data/flat/ or data/flat, never apps/data
         t.true(
             relativeOutputPath.startsWith('data/flat/'),
             `Path must start with data/flat/, got: ${relativeOutputPath}`,
@@ -36,7 +35,6 @@ test.serial(
             'Path must not include apps/data',
         )
 
-        // Find repo root to confirm physical file existence
         let repoRoot = process.cwd()
         while (
             repoRoot &&
@@ -51,16 +49,19 @@ test.serial(
         }
 
         const absoluteOutputFile = path.join(repoRoot, relativeOutputPath)
+
+        // Guaranteed teardown hook via AVA lifecycle
+        t.teardown(async () => {
+            await fs.remove(absoluteOutputFile).catch(() => {})
+        })
+
         t.true(
             fs.existsSync(absoluteOutputFile),
             `File should exist on disk at ${absoluteOutputFile}`,
         )
 
         const content = await fs.readFile(absoluteOutputFile, 'utf8')
-        t.true(
-            content.length > 0,
-            'Flattened content should not be empty (should contain code files)',
-        )
+        t.true(content.length > 0, 'Flattened content should not be empty')
         t.true(
             result.libBit.val > 0,
             'Should have flattened at least one code file',
@@ -77,8 +78,5 @@ test.serial(
             [],
             'Flattened content must not contain .wrangler source files',
         )
-
-        // Teardown: delete the generated test output file
-        await fs.remove(absoluteOutputFile)
     },
 )

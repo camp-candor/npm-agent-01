@@ -1,4 +1,3 @@
-// eslint.config.js
 import js from '@eslint/js'
 import tseslint from 'typescript-eslint'
 import globals from 'globals'
@@ -23,36 +22,38 @@ export default tseslint.config(
 
     // 2. Main Config
     {
-        // ⬇️ UPGRADE: Use "TypeChecked" configs to enable semantic rules
         extends: [
             js.configs.recommended,
             ...tseslint.configs.recommendedTypeChecked,
             ...tseslint.configs.stylisticTypeChecked,
         ],
-        files: ['**/*.{ts,tsx}'], // Only run type-checking on TS files
+        files: ['**/*.{ts,tsx}'],
         languageOptions: {
             ecmaVersion: 2020,
             globals: globals.node,
             parserOptions: {
-                // ⬇️ THE MAGIC SETTING: Enables high-performance monorepo linting
                 projectService: true,
                 tsconfigRootDir: import.meta.dirname,
             },
         },
         rules: {
             'no-console': 'warn',
-
-            // ⬇️ TYPE-AWARE RULES (Only possible with projectService)
-            '@typescript-eslint/no-floating-promises': 'error', // Catch unawaited promises
-            '@typescript-eslint/await-thenable': 'error', // Catch awaiting non-promises
-            '@typescript-eslint/no-explicit-any': 'error', // Enforce strict typing
+            '@typescript-eslint/no-floating-promises': 'error',
+            '@typescript-eslint/await-thenable': 'error',
+            '@typescript-eslint/no-explicit-any': 'error',
             '@typescript-eslint/consistent-type-imports': 'error',
         },
     },
 
-    // 3. Disable type-checking for JS files (Build scripts, configs)
+    // 3. Disable type-checking for JS files & root config scripts
     {
         extends: [tseslint.configs.disableTypeChecked],
-        files: ['**/*.js', '**/*.mjs', '**/*.cjs'],
+        files: [
+            '**/*.js',
+            '**/*.mjs',
+            '**/*.cjs',
+            'vitest.workspace.ts',
+            'vitest.config.ts',
+        ],
     },
 )
