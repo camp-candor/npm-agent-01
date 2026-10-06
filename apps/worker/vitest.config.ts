@@ -4,6 +4,8 @@ import { resolve } from 'path'
 export default defineWorkersConfig({
     resolve: {
         alias: {
+            '@aws-sdk/client-bedrock-runtime': resolve(__dirname, '../../node_modules/@aws-sdk/client-bedrock-runtime/dist-es/index.js'),
+            '@smithy/core/client': resolve(__dirname, '../../node_modules/@smithy/core/dist-es/submodules/client/index.js'),
             'ajv': resolve(
                 __dirname,
                 '../../node_modules/@funtuantw/pi-agent-cf/stubs/ajv.js',

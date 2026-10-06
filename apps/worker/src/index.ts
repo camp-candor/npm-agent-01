@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { createAgentWorker } from '@funtuantw/pi-agent-cf'
 import { coreTools, type Env } from './tools.core.js'
-import { customTools } from './tools.custom.js'
+// import { customTools } from './tools.custom.js'
 
 // ----------------------------------------------------------------------------
 // :: DETERMINISTIC LLM & DEVOPS SYSTEM PROMPT
@@ -11,7 +11,7 @@ const cfModel: any = {
   id: '@cf/meta/llama-3.2-3b-instruct',
   api: 'openai-completions',
   provider: 'openai',
-  baseUrl: '', // Injected dynamically at runtime
+  baseUrl: '',
   reasoning: false,
   input: ['text'],
   temperature: 0.1,
@@ -42,8 +42,7 @@ OPERATIONAL INVARIANTS:
         `.trim()
   },
   model: cfModel,
-  // Aggregator Boundary: Merges upstream core mechanics with downstream custom tools
-  tools: (env) => [...coreTools(env), ...customTools(env)],
+  tools: (env) => [...coreTools(env), ],
   getApiKey: (provider, env) => {
     if (provider === 'openai') return env.CLOUDFLARE_API_TOKEN
     return undefined
@@ -59,15 +58,18 @@ const app = new Hono<{ Bindings: Env }>()
 // Root Health & Verification Endpoint
 app.get('/', (c) => c.text('REPO-BOT EDGE CONTROL PLANE IS LIVE'))
 
-// Structured Diagnostics Endpoint
+// Structured Diagnostics Endpoint (Satisfies packages/000.agent switchboard probe)
 app.get('/health', (c) =>
-  c.json({
-    status: 'healthy',
-    service: 'repo-bot-edge',
-    timestamp: new Date().toISOString(),
-    hasGithubToken: Boolean(c.env.GITHUB_TOKEN),
-    aiGateway: c.env.CLOUDFLARE_AI_GATEWAY || 'default',
-  }),
+  c.json(
+    {
+      status: 'healthy',
+      service: 'npm-agent-01-worker',
+      timestamp: new Date().toISOString(),
+      hasGithubToken: Boolean(c.env.GITHUB_TOKEN),
+      aiGateway: c.env.CLOUDFLARE_AI_GATEWAY || 'default',
+    },
+    200,
+  ),
 )
 
 // Fast-Path Oracle Endpoint
