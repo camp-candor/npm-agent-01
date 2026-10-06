@@ -59,7 +59,7 @@ describe('Protected Branch Ref Shield & S_clean Invariants (apps/worker)', () =>
         expect(() => assertSafeBranchRef(`refs/heads/${branch}`)).toThrow(
           /SECURITY_BREACH/,
         )
-        expect(() => assertSafeBranchRef(`spec/${branch}`)).not.toThrow() // Namespaced under spec is safe
+        expect(() => assertSafeBranchRef(`spec/${branch}`)).not.toThrow() // Namespaced under spec/ is permitted
       }
     })
   })
