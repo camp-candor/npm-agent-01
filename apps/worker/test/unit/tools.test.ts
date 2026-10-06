@@ -229,7 +229,7 @@ describe('Deterministic Git Tools & TypeBox Firewall (apps/worker)', () => {
       const receipt = parseReceipt(result)
       expect(receipt.status).toBe('FAILED')
       expect(receipt.error).toContain('SECURITY_BREACH')
-      expect(receipt.error).toContain('protected branch')
+      expect(receipt.error).toContain('Refusal to operate on non-spec branch')
     })
   })
 

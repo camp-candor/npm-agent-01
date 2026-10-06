@@ -1,5 +1,6 @@
 import type { AgentEnv, AgentTool } from '@funtuantw/pi-agent-cf'
 import { Type, type Static } from '@sinclair/typebox'
+import { redactSecrets } from './redaction.js'
 
 // ============================================================================
 // :: REPO-BOT: DETERMINISTIC DEVOPS & GIT TOOLS (UPSTREAM CORE)
@@ -22,6 +23,28 @@ export const PROTECTED_BRANCHES = new Set([
   'production',
   'audit-log',
 ])
+
+/**
+ * Enforces the Ref Shield: guarantees operations occur exclusively on
+ * ephemeral sandbox branches under spec/ and never on protected roots.
+ */
+export const assertSafeBranchRef = (branchRef: string): void => {
+  const normalized = branchRef.replace(/^refs\/heads\//, '').trim()
+
+  // 1. Mandatory 'spec/' namespace enforcement
+  if (!normalized.startsWith('spec/')) {
+    throw new Error(
+      `SECURITY_BREACH: Refusal to operate on non-spec branch: ${normalized}`,
+    )
+  }
+
+  // 2. Explicit protection of protected roots
+  if (PROTECTED_BRANCHES.has(normalized.toLowerCase())) {
+    throw new Error(
+      `SECURITY_BREACH: Protected branch target caught in ref shield: ${normalized}`,
+    )
+  }
+}
 
 // ----------------------------------------------------------------------------
 // :: NETWORK DISPATCH UTILITY (Pure Web Standards)
@@ -57,8 +80,9 @@ export async function githubRequest(
 
   const data = await response.json()
   if (!response.ok) {
+    const errorMsg = (data as any).message || JSON.stringify(data)
     throw new Error(
-      `GitHub API error (${response.status}): ${(data as any).message || JSON.stringify(data)}`,
+      `GitHub API error (${response.status}): ${redactSecrets(errorMsg)}`,
     )
   }
   return data
@@ -126,12 +150,12 @@ export const createGetCommitShaTool = (
           {
             type: 'text',
             text: JSON.stringify({
-              error: err.message,
+              error: redactSecrets(err.message),
               status: 'FAILED',
             }),
           },
         ],
-        details: { error: err.message },
+        details: { error: redactSecrets(err.message) },
       }
     }
   },
@@ -180,14 +204,11 @@ export const createEphemeralBranchTool = (
     args: Static<typeof CreateEphemeralBranchParams>,
   ) => {
     try {
-      const cleanBranch = args.branch_name.replace(/^refs\/heads\//, '')
-      if (PROTECTED_BRANCHES.has(cleanBranch.toLowerCase())) {
-        throw new Error(
-          `SECURITY_BREACH: Cannot provision protected root branch: ${cleanBranch}`,
-        )
-      }
+      assertSafeBranchRef(args.branch_name)
 
+      const cleanBranch = args.branch_name.replace(/^refs\/heads\//, '')
       const ref = `refs/heads/${cleanBranch}`
+
       const data: any = await githubRequest(
         `/repos/${args.owner}/${args.repo}/git/refs`,
         env,
@@ -216,12 +237,12 @@ export const createEphemeralBranchTool = (
           {
             type: 'text',
             text: JSON.stringify({
-              error: err.message,
+              error: redactSecrets(err.message),
               status: 'FAILED',
             }),
           },
         ],
-        details: { error: err.message },
+        details: { error: redactSecrets(err.message) },
       }
     }
   },
@@ -278,7 +299,8 @@ export const createWriteRepoFileTool = (
   parameters: WriteRepoFileParams,
   execute: async (_id: any, args: Static<typeof WriteRepoFileParams>) => {
     try {
-      // Directory Traversal Defense
+      assertSafeBranchRef(args.branch)
+
       const normalized = args.path.replace(/\\/g, '/').replace(/^\/+/, '')
       if (normalized.split('/').some((part) => part === '..' || part === '.')) {
         throw new Error(
@@ -287,12 +309,6 @@ export const createWriteRepoFileTool = (
       }
 
       const cleanBranch = args.branch.replace(/^refs\/heads\//, '')
-      if (PROTECTED_BRANCHES.has(cleanBranch.toLowerCase())) {
-        throw new Error(
-          `SECURITY_BREACH: Commits directly to protected branch ${cleanBranch} are blocked.`,
-        )
-      }
-
       const base64Content = btoa(unescape(encodeURIComponent(args.content)))
 
       const body: Record<string, any> = {
@@ -328,12 +344,12 @@ export const createWriteRepoFileTool = (
           {
             type: 'text',
             text: JSON.stringify({
-              error: err.message,
+              error: redactSecrets(err.message),
               status: 'FAILED',
             }),
           },
         ],
-        details: { error: err.message },
+        details: { error: redactSecrets(err.message) },
       }
     }
   },
@@ -384,6 +400,8 @@ export const createPullRequestTool = (
   parameters: CreatePullRequestParams,
   execute: async (_id: any, args: Static<typeof CreatePullRequestParams>) => {
     try {
+      assertSafeBranchRef(args.head_branch)
+
       const data: any = await githubRequest(
         `/repos/${args.owner}/${args.repo}/pulls`,
         env,
@@ -416,12 +434,12 @@ export const createPullRequestTool = (
           {
             type: 'text',
             text: JSON.stringify({
-              error: err.message,
+              error: redactSecrets(err.message),
               status: 'FAILED',
             }),
           },
         ],
-        details: { error: err.message },
+        details: { error: redactSecrets(err.message) },
       }
     }
   },
@@ -523,12 +541,12 @@ export const createInspectRepoChecksTool = (
           {
             type: 'text',
             text: JSON.stringify({
-              error: err.message,
+              error: redactSecrets(err.message),
               status: 'FAILED',
             }),
           },
         ],
-        details: { error: err.message },
+        details: { error: redactSecrets(err.message) },
       }
     }
   },
@@ -604,7 +622,7 @@ export async function inspectRepoChecksViaAiGateway(
   if (!aiRes.ok) {
     const errorText = await aiRes.text()
     throw new Error(
-      `Cloudflare AI Gateway error (${aiRes.status}): ${errorText}`,
+      `Cloudflare AI Gateway error (${aiRes.status}): ${redactSecrets(errorText)}`,
     )
   }
 
