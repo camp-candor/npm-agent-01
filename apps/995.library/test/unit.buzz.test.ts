@@ -19,9 +19,8 @@ function makeModel() {
 const ste = null as any
 
 test.serial(
-    'flattenUnit — flattens directory to root data/unit/<name>.txt without node_modules, dist, or data',
+    'flattenUnit -- flattens directory to root data/unit/<name>.txt without leaks',
     async (t) => {
-        // Find repo root
         let repoRoot = process.cwd()
         while (
             repoRoot &&
@@ -35,7 +34,6 @@ test.serial(
             repoRoot = parent
         }
 
-        // Create a temporary mock directory inside scratch or tmp folder for deterministic testing
         const tempDir = path.join(repoRoot, 'scratch_test_unit')
         await fs.ensureDir(path.join(tempDir, 'src'))
         await fs.ensureDir(path.join(tempDir, 'node_modules', 'dummy'))
@@ -61,6 +59,19 @@ test.serial(
 
         const testIdx = 'test-scratch-unit'
         const bal = makeBal(testIdx, tempDir)
+
+        const expectedOutputFile = path.join(
+            repoRoot,
+            'data',
+            'unit',
+            `${testIdx}.txt`,
+        )
+
+        // Guaranteed teardown hook via AVA lifecycle
+        t.teardown(async () => {
+            await fs.remove(expectedOutputFile).catch(() => {})
+            await fs.remove(tempDir).catch(() => {})
+        })
 
         await flattenUnit(makeModel(), bal, ste)
 
@@ -92,15 +103,11 @@ test.serial(
         t.false(content.includes('leak'), 'Must not contain node_modules files')
         t.false(content.includes('compiled'), 'Must not contain dist files')
         t.false(content.includes('store.json'), 'Must not contain data files')
-
-        // Teardown
-        await fs.remove(absoluteOutputFile)
-        await fs.remove(tempDir)
     },
 )
 
 test.serial(
-    'createUnit — scaffolds templates into root data/unit/00.<nom>.unit',
+    'createUnit -- scaffolds templates into root data/unit/00.<nom>.unit',
     async (t) => {
         let repoRoot = process.cwd()
         while (
@@ -117,26 +124,30 @@ test.serial(
 
         const testVerb = 'weather'
         const bal = makeBal(testVerb)
+        const targetRelativeDir = `data/unit/00.${testVerb}.unit`
+        const targetAbsoluteDir = path.join(repoRoot, targetRelativeDir)
 
-        // Execute createUnit
+        // Guaranteed teardown hook via AVA lifecycle
+        t.teardown(async () => {
+            await fs.remove(targetAbsoluteDir).catch(() => {})
+        })
+
         createUnit(makeModel(), bal, ste)
 
-        // createUnit has a 2111ms delay
+        // createUnit internally holds a 2111ms delay
         await new Promise((resolve) => setTimeout(resolve, 2500))
 
         t.true(bal.slv.calledOnce, 'bal.slv should be called once')
         const result = bal.slv.firstCall.args[0]
         t.is(result.untBit.idx, 'create-unit')
 
-        const relativeOutputPath = result.untBit.src
         t.true(
-            relativeOutputPath.startsWith('data/unit/00.weather.unit'),
-            `Expected data/unit/00.weather.unit, got: ${relativeOutputPath}`,
+            result.untBit.src.startsWith(targetRelativeDir),
+            `Expected ${targetRelativeDir}, got: ${result.untBit.src}`,
         )
 
-        const targetDir = path.join(repoRoot, relativeOutputPath)
         t.true(
-            fs.existsSync(targetDir),
+            fs.existsSync(targetAbsoluteDir),
             'Target unit directory must exist on disk',
         )
 
@@ -152,14 +163,11 @@ test.serial(
         ]
 
         for (const relFile of expectedFiles) {
-            const fullFilePath = path.join(targetDir, relFile)
+            const fullFilePath = path.join(targetAbsoluteDir, relFile)
             t.true(
                 fs.existsSync(fullFilePath),
-                `Missing expected scaffolded file: ${relFile}`,
+                `Missing scaffolded file: ${relFile}`,
             )
         }
-
-        // Teardown
-        await fs.remove(targetDir)
     },
 )
