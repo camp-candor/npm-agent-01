@@ -17,7 +17,7 @@
         "commit": "echo '❌ STOP: Use `git commit -m \"type: msg\"` directly.' && exit 1",
         "commit:human": "npm run commit:before && npx git-cz",
         "//__ 🚀 DEV (Parallel) ___________________": "",
-        "dev": "npm run dev --workspace=@camp_candor/995.library",
+        "dev": "npm run dev --workspace=@camp_candor/agent",
         "dev:note": "echo 'ℹ️ AGENT: When creating new apps, add them to the dev script above.'",
         "lib": "npx tsx run.ts -t pivot",
         "//__ 🏗️ BUILD (Type Safe) ________________": "",

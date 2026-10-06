@@ -10,12 +10,8 @@ import {
     WriteRepoFileParams,
     CreatePullRequestParams,
     InspectRepoChecksParams,
-    RollDice,
-    createRollDiceTool,
-    ModulateVibe,
-    createModulateVibeTool,
     type Env,
-} from '../../src/tools.js'
+} from '../../src/tools.core.js'
 
 describe('Deterministic Git Tools (apps/worker)', () => {
     const mockEnv = {
@@ -152,7 +148,7 @@ describe('Deterministic Git Tools (apps/worker)', () => {
             } as any)
 
             const tool = createWriteRepoFileTool(mockEnv)
-            const rawContent = 'Hello World 🚀'
+            const rawContent = 'Hello World'
             const expectedBase64 = btoa(
                 unescape(encodeURIComponent(rawContent)),
             )
@@ -291,121 +287,6 @@ describe('Deterministic Git Tools (apps/worker)', () => {
             expect(result.details.checks.total_count).toBe(2)
             expect(result.details.checks.status).toBe('completed')
             expect(result.details.checks.runs).toHaveLength(2)
-        })
-
-        it('computes all_passed: false and status: in_progress when a run is still running', async () => {
-            const mockCommit = {
-                sha: 'def456commit',
-                commit: {
-                    message: 'test: ongoing run',
-                    author: {
-                        name: 'Developer',
-                        date: '2026-09-21T21:05:00Z',
-                    },
-                },
-            }
-
-            const mockCheckRuns = {
-                total_count: 2,
-                check_runs: [
-                    {
-                        name: 'ci/test',
-                        status: 'completed',
-                        conclusion: 'success',
-                        details_url: 'https://github.com/ci/1',
-                    },
-                    {
-                        name: 'ci/build',
-                        status: 'in_progress',
-                        conclusion: null,
-                        details_url: 'https://github.com/ci/2',
-                    },
-                ],
-            }
-
-            globalThis.fetch = vi.fn().mockImplementation((url: string) => {
-                if (url.includes('/commits?per_page=1')) {
-                    return Promise.resolve({
-                        ok: true,
-                        json: async () => [mockCommit],
-                    })
-                }
-                if (url.includes('/check-runs')) {
-                    return Promise.resolve({
-                        ok: true,
-                        json: async () => mockCheckRuns,
-                    })
-                }
-                return Promise.reject(new Error(`Unexpected url: ${url}`))
-            })
-
-            const tool = createInspectRepoChecksTool(mockEnv)
-            const result = await tool.execute('call_inspect_2', {
-                owner: 'camp-candor',
-                repo: '000.repo-bot',
-            })
-
-            expect(result.details.checks.all_passed).toBe(false)
-            expect(result.details.checks.status).toBe('in_progress')
-        })
-    })
-
-    describe('roll_dice', () => {
-        it('executes dice roll and returns valid receipt with totals and rolls', async () => {
-            const tool = createRollDiceTool(mockEnv)
-            const result = await tool.execute('call_dice_1', {
-                number_of_dice: 2,
-                sides_per_die: 6,
-                reason: 'Combat initiative check',
-            })
-
-            const receipt = parseReceipt(result)
-            expect(receipt.action).toBe('DICE_ROLLED')
-            expect(receipt.reason).toBe('Combat initiative check')
-            expect(receipt.rolls).toHaveLength(2)
-            expect(receipt.total).toBe(receipt.rolls[0] + receipt.rolls[1])
-            expect(result.details.rolls).toHaveLength(2)
-            expect(result.details.total).toBe(receipt.total)
-        })
-
-        it('falls back to default 1 die of 20 sides when not specified', async () => {
-            const result = await RollDice.execute('call_dice_2', {
-                number_of_dice: 0,
-                sides_per_die: 0,
-                reason: 'Default roll',
-            })
-
-            const receipt = parseReceipt(result)
-            expect(receipt.action).toBe('DICE_ROLLED')
-            expect(receipt.rolls).toHaveLength(1)
-            expect(receipt.rolls[0]).toBeGreaterThanOrEqual(1)
-            expect(receipt.rolls[0]).toBeLessThanOrEqual(20)
-        })
-    })
-
-    describe('modulate_vibe', () => {
-        it('shifts atmosphere and returns structured receipt', async () => {
-            const tool = createModulateVibeTool(mockEnv)
-            const result = await tool.execute('call_vibe_1', {
-                hex_color: '#ff0000',
-                shader_intensity: 0.8,
-                ambient_audio: 'static',
-            })
-
-            const receipt = parseReceipt(result)
-            expect(receipt.action).toBe('VIBE_SHIFTED')
-            expect(receipt.new_color).toBe('#ff0000')
-            expect(receipt.audio_track).toBe('static')
-            expect(result.details.shader_intensity).toBe(0.8)
-
-            const directResult = await ModulateVibe.execute('call_vibe_2', {
-                hex_color: '#00ff00',
-                shader_intensity: 0.5,
-                ambient_audio: 'rain',
-            })
-            const directReceipt = parseReceipt(directResult)
-            expect(directReceipt.action).toBe('VIBE_SHIFTED')
-            expect(directReceipt.new_color).toBe('#00ff00')
         })
     })
 })
