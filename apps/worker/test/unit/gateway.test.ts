@@ -4,7 +4,7 @@ import {
     getGatewayToken,
     inspectRepoChecksViaAiGateway,
     type Env,
-} from '../../src/tools.js'
+} from '../../src/tools.core.js'
 
 describe('AI Gateway Helpers & Routing (apps/worker)', () => {
     const originalFetch = globalThis.fetch

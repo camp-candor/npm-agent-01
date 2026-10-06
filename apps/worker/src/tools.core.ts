@@ -2,20 +2,23 @@ import type { AgentEnv, AgentTool } from '@funtuantw/pi-agent-cf'
 import { Type, type Static } from '@sinclair/typebox'
 
 // ============================================================================
-// [ REPO-BOT: DETERMINISTIC DEVOPS & GIT TOOLS ]
+// [ REPO-BOT: DETERMINISTIC DEVOPS & GIT TOOLS (UPSTREAM CORE) ]
 // ============================================================================
 
 export interface Env extends AgentEnv {
     CLOUDFLARE_ACCOUNT_ID: string
     CLOUDFLARE_API_TOKEN: string
-    CLOUDFLARE_AI_GATEWAY: string // Gateway slug (e.g., "default")
-    CLOUDFLARE_AI_GATEWAY_TOKEN?: string // Gateway universal / authenticated token (cfut_...)
-    GITHUB_TOKEN: string // Token loaded from .env
+    CLOUDFLARE_AI_GATEWAY: string
+    CLOUDFLARE_AI_GATEWAY_TOKEN?: string
+    GITHUB_TOKEN: string
     GITHUB_DEFAULT_OWNER?: string
-    AI: any // Cloudflare Workers AI binding
+    AI: any
 }
 
-// Helper: GitHub REST API fetcher with deterministic headers
+// ----------------------------------------------------------------------------
+// Network Dispatch Utility (Native Web Standards)
+// ----------------------------------------------------------------------------
+
 export async function githubRequest(
     endpoint: string,
     env: Env,
@@ -28,7 +31,7 @@ export async function githubRequest(
 
     if (!token) {
         throw new Error(
-            'Missing GITHUB_TOKEN. Ensure GITHUB_TOKEN is set in .env',
+            'Missing GITHUB_TOKEN. Ensure GITHUB_TOKEN is configured in environment.',
         )
     }
 
@@ -56,7 +59,7 @@ export async function githubRequest(
 }
 
 // ----------------------------------------------------------------------------
-// 🎛️ DETERMINISTIC TOOLS (TypeBox additionalProperties: false)
+// Deterministic DevOps Tools (additionalProperties: false)
 // ----------------------------------------------------------------------------
 
 // TOOL 1: Capture HEAD SHA (S_clean anchor)
@@ -116,7 +119,7 @@ export const createGetCommitShaTool = (
     },
 })
 
-// TOOL 2: Cut Ephemeral Branch (spec/TASK-XX-<short-sha>)
+// TOOL 2: Cut Ephemeral Branch
 export const CreateEphemeralBranchParams = Type.Object(
     {
         owner: Type.String({ description: 'GitHub organization or username' }),
@@ -364,7 +367,6 @@ export const InspectRepoChecksParams = Type.Object(
 )
 
 export async function fetchRepoChecks(owner: string, repo: string, env: Env) {
-    // 1. Query GET /repos/{owner}/{repo}/commits?per_page=1 to get the latest commit SHA and message.
     const commitsData: any = await githubRequest(
         `/repos/${owner}/${repo}/commits?per_page=1`,
         env,
@@ -382,7 +384,6 @@ export async function fetchRepoChecks(owner: string, repo: string, env: Env) {
     const timestamp =
         latestCommit.commit?.author?.date || new Date().toISOString()
 
-    // 2. Query GET /repos/{owner}/{repo}/commits/{sha}/check-runs to evaluate test outcomes.
     const checkRunsData: any = await githubRequest(
         `/repos/${owner}/${repo}/commits/${sha}/check-runs`,
         env,
@@ -391,7 +392,6 @@ export async function fetchRepoChecks(owner: string, repo: string, env: Env) {
     const checkRuns: any[] = checkRunsData.check_runs || []
     const totalCount = checkRunsData.total_count ?? checkRuns.length
 
-    // 3. Compute all_passed as true ONLY if every check run has status === "completed" and conclusion === "success".
     const allPassed =
         checkRuns.length > 0 &&
         checkRuns.every(
@@ -461,6 +461,10 @@ export const createInspectRepoChecksTool = (
     },
 })
 
+// ----------------------------------------------------------------------------
+// AI Gateway Configuration & Fallback Helpers
+// ----------------------------------------------------------------------------
+
 export const getGatewaySlug = (env: Env): string => {
     if (
         env.CLOUDFLARE_AI_GATEWAY &&
@@ -498,7 +502,7 @@ export async function inspectRepoChecksViaAiGateway(
             {
                 role: 'system',
                 content:
-                    'You are repo-bot, the deterministic DevOps Control Plane and Git Mechanic. Return ONLY a valid JSON object without markdown explanation matching the exact structure: {"commit":{"sha":"<string>","message":"<string>","author":"<string>","timestamp":"<ISO 8601 string>"},"checks":{"all_passed":<boolean>,"total_count":<number>,"status":"<completed | in_progress | queued>","runs":[{"name":"<string>","status":"<string>","conclusion":"<string | null>","details_url":"<string>"}]}}',
+                    'You are repo-bot, the deterministic DevOps Control Plane and Git Mechanic. Return ONLY a valid JSON object matching the exact structure: {"commit":{"sha":"<string>","message":"<string>","author":"<string>","timestamp":"<ISO 8601 string>"},"checks":{"all_passed":<boolean>,"total_count":<number>,"status":"<completed | in_progress | queued>","runs":[{"name":"<string>","status":"<string>","conclusion":"<string | null>","details_url":"<string>"}]}}',
             },
             {
                 role: 'user',
@@ -510,7 +514,7 @@ export async function inspectRepoChecksViaAiGateway(
             },
             {
                 role: 'user',
-                content: `Tool receipt from inspect_repo_checks: ${JSON.stringify(rawToolData)}. Synthesize and return the final JSON payload. Output ONLY the JSON.`,
+                content: `Tool receipt from inspect_repo_checks: ${JSON.stringify(rawToolData)}. Synthesize and return the final JSON payload. Output ONLY raw JSON.`,
             },
         ],
     }
@@ -536,99 +540,22 @@ export async function inspectRepoChecksViaAiGateway(
 
     try {
         const cleaned = content.replace(/```json\s*|\s*```/g, '').trim()
+
         const parsed = JSON.parse(cleaned)
         if (parsed?.commit?.sha && parsed?.checks) {
             return parsed
         }
     } catch {
-        // If formatting was non-strict, fall back to raw verified tool data
+        // Fall back to verified tool data on parse drift
     }
 
     return rawToolData
 }
 
-// ----------------------------------------------------------------------------
-// 🎲 DYNAMIC WORKER TOOLS (Dice & Vibe Modulation)
-// ----------------------------------------------------------------------------
-
-// TOOL 6: The Rhythm Section (Dice)
-export const RollDiceParams = Type.Object({
-    number_of_dice: Type.Number({ description: 'Number of dice to roll' }),
-    sides_per_die: Type.Number({ description: 'Number of sides on the dice' }),
-    reason: Type.String({ description: 'The narrative reason for the roll.' }),
-})
-
-export const RollDice: AgentTool<typeof RollDiceParams> = {
-    name: 'roll_dice',
-    label: 'Roll Dice',
-    description:
-        'REQUIRED: Invoke ONLY when a mechanical probability check, attack, or random number is requested. Returns the mathematical result.',
-    parameters: RollDiceParams,
-    execute: async (_id: any, args: Static<typeof RollDiceParams>) => {
-        const rolls = []
-        let total = 0
-        const num = args.number_of_dice || 1
-        const sides = args.sides_per_die || 20
-
-        for (let i = 0; i < num; i++) {
-            const roll = Math.floor(Math.random() * sides) + 1
-            rolls.push(roll)
-            total += roll
-        }
-
-        const receipt = JSON.stringify({
-            action: 'DICE_ROLLED',
-            reason: args.reason,
-            total,
-            rolls,
-        })
-        return {
-            content: [{ type: 'text', text: receipt }],
-            details: { total, rolls },
-        }
-    },
-}
-
-export const createRollDiceTool = (
-    _env?: Env,
-): AgentTool<typeof RollDiceParams> => RollDice
-
-// TOOL 7: The Synthesizer (Vibe Modulation)
-export const ModulateVibeParams = Type.Object({
-    hex_color: Type.String({
-        description:
-            'A hex color code representing the requested mood (e.g., #ff0000 for danger).',
-    }),
-    shader_intensity: Type.Number({
-        minimum: 0,
-        maximum: 1,
-        description: 'How intense the visual distortion should be.',
-    }),
-    ambient_audio: Type.String({
-        enum: ['silence', 'rain', 'heartbeat', 'static'],
-    }),
-})
-
-export const ModulateVibe: AgentTool<typeof ModulateVibeParams> = {
-    name: 'modulate_vibe',
-    label: 'Modulate Environment Vibe',
-    description:
-        'REQUIRED: Invoke ONLY when the user asks to change the environment, the mood, the lighting, or the visual state of the world.',
-    parameters: ModulateVibeParams,
-    execute: async (_id: any, args: Static<typeof ModulateVibeParams>) => {
-        const receipt = JSON.stringify({
-            action: 'VIBE_SHIFTED',
-            new_color: args.hex_color,
-            audio_track: args.ambient_audio,
-        })
-
-        return {
-            content: [{ type: 'text', text: receipt }],
-            details: { ...args },
-        }
-    },
-}
-
-export const createModulateVibeTool = (
-    _env?: Env,
-): AgentTool<typeof ModulateVibeParams> => ModulateVibe
+export const coreTools = (env: Env): AgentTool<any>[] => [
+    createGetCommitShaTool(env),
+    createEphemeralBranchTool(env),
+    createWriteRepoFileTool(env),
+    createPullRequestTool(env),
+    createInspectRepoChecksTool(env),
+]

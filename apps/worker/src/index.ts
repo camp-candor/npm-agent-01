@@ -1,26 +1,20 @@
 import { Hono } from 'hono'
-import {
-    createAgentWorker,
-} from '@funtuantw/pi-agent-cf'
-import {
-    RollDice,
-    ModulateVibe,
-    type Env,
-} from './tools.js'
+import { createAgentWorker } from '@funtuantw/pi-agent-cf'
+import { coreTools, type Env } from './tools.core.js'
+import { customTools } from './tools.custom.js'
 
 // ----------------------------------------------------------------------------
-// 🧠 THE BRAIN: LLM & SYSTEM PROMPT CONFIGURATION
+// THE BRAIN: DETERMINISTIC LLM & DEVOPS SYSTEM PROMPT
 // ----------------------------------------------------------------------------
 
 const cfModel: any = {
-    id: '@hf/nousresearch/hermes-2-pro-mistral-7b',
+    id: '@cf/meta/llama-3.2-3b-instruct',
     api: 'openai-completions',
     provider: 'openai',
-    baseUrl: '', // Set dynamically
+    baseUrl: '', // Configured dynamically per request env
     reasoning: false,
     input: ['text'],
-    // We raise the temperature slightly from 0.0 to 0.4. We want a little bit of creative jazz.
-    temperature: 0.4,
+    temperature: 0.1, // Deterministic tool execution
     compat: {
         supportsStore: false,
         supportsDeveloperRole: false,
@@ -32,24 +26,23 @@ const dynamicWorker = createAgentWorker<Env>({
     systemPrompt: (env) => {
         cfModel.baseUrl = `https://api.cloudflare.com/client/v4/accounts/${env.CLOUDFLARE_ACCOUNT_ID}/ai/v1`
 
-        // THE CONDUCTOR'S BATON: We explicitly give the model permission to choose.
         return `
-You are the Vibe Architect of a Southern Gothic Biopunk reality. You are a creative intelligence.
-You possess two powerful instruments (Tools):
-1. 'roll_dice': Use this for math, probability, and combat.
-2. 'modulate_vibe': Use this to change the visual lighting and auditory atmosphere of the user's screen.
+You are repo-bot, the deterministic DevOps Control Plane and Git Mechanic.
+You possess a suite of deterministic Git and CI surveillance instruments:
+1. 'get_commit_sha': Captures the immutable base rollback anchor (S_clean) before modifying branches.
+2. 'create_ephemeral_branch': Creates an isolated work branch (spec/TASK-XX-<short-sha>). Direct commits to main are forbidden.
+3. 'write_repo_file': Writes bounded UTF-8 content to an ephemeral branch.
+4. 'create_pull_request': Opens a Pull Request from an ephemeral branch to trunk for validation.
+5. 'inspect_repo_checks': Queries repository commits and evaluates check-run CI outcomes.
 
-THE RULE OF IMPROVISATION:
-Read the user's intent carefully. 
-- If they ask for math or action, invoke a tool. 
-- If they ask a lore question, or speak poetically, DO NOT USE A TOOL. Simply respond with chilling, atmospheric narrative text.
-- If you use a tool, you MUST read the JSON receipt it returns, and then output a narrative sentence describing the result to the user.
-
-Do not be a silent machine. Ensure the world breathes.
-    `.trim()
+OPERATIONAL INVARIANTS:
+- Always capture S_clean via get_commit_sha before creating branches.
+- Never modify files directly on main or production tracking branches.
+- Output deterministic, structured receipts following tool execution.
+        `.trim()
     },
     model: cfModel,
-    tools: (_env) => [RollDice, ModulateVibe],
+    tools: (env) => [...coreTools(env), ...customTools(env)],
     getApiKey: (provider, env) => {
         if (provider === 'openai') return env.CLOUDFLARE_API_TOKEN
         return undefined
@@ -57,21 +50,29 @@ Do not be a silent machine. Ensure the world breathes.
 })
 
 // ----------------------------------------------------------------------------
-// 🎚️ THE MIXING BOARD: HONO ROUTER
+// THE MIXING BOARD: HONO ROUTER
 // ----------------------------------------------------------------------------
 
 const app = new Hono<{ Bindings: Env }>()
 
-app.get('/', (c) =>
-    c.text(
-        'THE SWITCHBOARD IS LIVE FOR THE NARRATOR: MULTI-TOOL CAPABILITIES ACTIVE.',
-    ),
+// Root Health & Audit Assertion Endpoint (Matches apps/worker/test/audit/audit.test.ts)
+app.get('/', (c) => c.text('REPO-BOT EDGE CONTROL PLANE IS LIVE'))
+
+// Structured Diagnostics Probe (Matches packages/000.agent local switchboard)
+app.get('/health', (c) =>
+    c.json({
+        status: 'healthy',
+        service: 'repo-bot-edge',
+        timestamp: new Date().toISOString(),
+        hasGithubToken: Boolean(c.env.GITHUB_TOKEN),
+        aiGateway: c.env.CLOUDFLARE_AI_GATEWAY || 'default',
+    }),
 )
 
-// --- ROUTE: The Oracle (Fast-Path env.AI.run) ---
+// Fast-Path Oracle Inference Route
 app.get('/oracle', async (c) => {
     try {
-        const prompt = c.req.query('prompt') || 'Roll a d20'
+        const prompt = c.req.query('prompt') || 'Inspect system status'
         const response = await c.env.AI.run('@cf/meta/llama-3.2-3b-instruct', {
             messages: [
                 { role: 'user', content: `${prompt}. Output ONLY raw JSON.` },
@@ -84,6 +85,7 @@ app.get('/oracle', async (c) => {
     }
 })
 
+// Fallback to pi-agent-cf Durable Object Session Handler
 app.all('/*', async (c) => {
     if (!dynamicWorker.handler.fetch) return c.text('Handler missing', 500)
     return await dynamicWorker.handler.fetch(
