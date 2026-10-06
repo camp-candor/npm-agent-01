@@ -1,5 +1,5 @@
 {
-    "name": "goblin-lore-00",
+    "name": "npm-agent-01",
     "version": "0.0.0",
     "type": "module",
     "private": true,
@@ -15,7 +15,6 @@
     "scripts": {
         "//__ 🛑 GUARDRAILS _______________________": "",
         "commit": "echo '❌ STOP: Use `git commit -m \"type: msg\"` directly.' && exit 1",
-        "commit:human": "npm run commit:before && npx git-cz",
         "//__ 🚀 DEV (Parallel) ___________________": "",
         "dev": "npm run dev --workspace=@camp_candor/agent",
         "dev:note": "echo 'ℹ️ AGENT: When creating new apps, add them to the dev script above.'",
@@ -24,13 +23,9 @@
         "build": "npm run build --workspaces --if-present",
         "build:force": "npm run build --workspaces --if-present --force",
         "//__ 🐊 TESTING ______________________": "",
-        "test": "npm run test:worker && npm run test:sower",
+        "test": "npm run test:worker && npm run test:agent && npm run test:library",
         "test:worker": "npm run test --workspace=@camp_candor/agent",
-        "test:sower": "npm run test --workspace=@camp_candor/995.library",
         "test:agent": "npm run test --workspace=@camp_candor/000.agent",
-        "test:repobot": "npm run test --workspace=@camp_candor/821.repobot",
-        "test:cloudflare": "npm run test --workspace=@camp_candor/822.cloudflare",
-        "test:jules": "npm run test --workspace=@camp_candor/823.jules",
         "test:audit": "npm run test:audit --workspace=@camp_candor/agent",
         "audit:local": "npm run test:audit:local --workspace=@camp_candor/agent",
         "audit:staging": "npm run test:audit:staging --workspace=@camp_candor/agent",
@@ -49,8 +44,6 @@
         "prettier:check": "prettier . --check --ignore-path .gitignore",
         "prettier:fix": "prettier . --write --ignore-path .gitignore",
         "//__ 📦 VERSIONING _______________________": "",
-        "changeset": "npx changeset",
-        "version": "npx changeset version && npm install",
         "//__ ☢️ RESET ____________________________": "",
         "clean": "npm run clean:dist && npm run clean:ts",
         "clean:dist": "find . -name 'dist' -type d -prune -exec rm -rf '{}' +",
@@ -59,9 +52,7 @@
         "reset": "npm run uninstall && npm install && npm run build",
         "//__ 🚢 SHIP ____________________________": "",
         "ship": "npm run build && npm run deploy --workspace=@camp_candor/agent -- --env staging && npm run audit:staging",
-        "compile:lore": "tsx packages/001.lore/src/compiler.ts",
-        "test:lore": "npm run test --workspace=@camp_candor/001.lore",
-        "audit:lore": "npm run compile:lore && git diff --exit-code compiled/under-the-floorboards/bible-state.json"
+        "test:library": "npm run test --workspace=@camp_candor/995.library"
     },
     "lint-staged": {
         "*.{js,ts,tsx,json,css,md}": [
@@ -73,8 +64,6 @@
     },
     "devDependencies": {
         "@cloudflare/vitest-pool-workers": "0.12.1",
-        "@commitlint/cli": "^19.0.0",
-        "@commitlint/config-conventional": "^19.0.0",
         "@eslint/js": "9.39.5",
         "@types/clone-deep": "4.0.4",
         "@types/dot": "1.1.7",
@@ -83,9 +72,7 @@
         "@vitest/ui": "3.2.4",
         "clone-deep": "4.0.1",
         "commander": "^13.1.0",
-        "commitizen": "^4.3.0",
         "concurrently": "^8.2.0",
-        "cz-conventional-changelog": "^3.3.0",
         "dotenv": "^16.6.1",
         "eslint": "^9.0.0",
         "globals": "^15.0.0",
@@ -103,11 +90,6 @@
         "typescript-eslint": "^8.0.0",
         "vitest": "3.2.4",
         "zod": "^3.22.0"
-    },
-    "config": {
-        "commitizen": {
-            "path": "./node_modules/cz-conventional-changelog"
-        }
     },
     "packageManager": "npm@10.9.2",
     "dependencies": {
