@@ -1,6 +1,6 @@
 {
     "$schema": "node_modules/wrangler/config-schema.json",
-    "name": "worker-test",
+    "name": "npm-agent-01-test",
     "main": "src/index.ts",
     "compatibility_date": "2026-01-07",
     "compatibility_flags": ["nodejs_compat"],
@@ -13,7 +13,7 @@
     },
     "env": {
         "staging": {
-            "name": "worker-agent",
+            "name": "npm-agent-01-staging",
         },
     },
 }

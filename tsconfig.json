@@ -4,7 +4,7 @@
         "module": "NodeNext",
         "moduleResolution": "NodeNext",
 
-        // 🛡️ STRICTNESS LEVEL 100 🛡️
+        // STRICTNESS LEVEL 100
         "strict": true,
         "noImplicitAny": true,
         "strictNullChecks": true,
@@ -19,6 +19,10 @@
             "@camp_candor/000.agent": ["./packages/000.agent/BEE.ts"]
         }
     },
+    "files": [],
     "exclude": ["node_modules", "dist"],
-    "references": [{ "path": "./packages/000.agent" }]
+    "references": [
+        { "path": "./packages/000.agent" },
+        { "path": "./apps/worker" }
+    ]
 }

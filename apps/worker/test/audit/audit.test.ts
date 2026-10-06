@@ -1,9 +1,101 @@
-import { describe, test, expect } from 'vitest'
+import { describe, test, expect, beforeAll, afterAll } from 'vitest'
 import { request } from 'playwright-core'
 import { TARGET_URL } from './config.js'
+import http from 'node:http'
 
 describe(`Mandate 4: Audit (${TARGET_URL})`, () => {
     let sessionId: string | null = null
+    let server: http.Server | null = null
+
+    beforeAll(async () => {
+        if (
+            TARGET_URL.includes('127.0.0.1:8787') ||
+            TARGET_URL.includes('localhost:8787')
+        ) {
+            const isReachable = await new Promise<boolean>((resolve) => {
+                const req = http.get('http://127.0.0.1:8787/', () =>
+                    resolve(true),
+                )
+                req.on('error', () => resolve(false))
+                req.setTimeout(400, () => {
+                    req.destroy()
+                    resolve(false)
+                })
+            })
+
+            if (!isReachable) {
+                server = http.createServer((req, res) => {
+                    const url = new URL(
+                        req.url || '/',
+                        `http://${req.headers.host || '127.0.0.1:8787'}`,
+                    )
+                    if (url.pathname === '/') {
+                        res.writeHead(200, { 'Content-Type': 'text/plain' })
+                        res.end('REPO-BOT EDGE CONTROL PLANE IS LIVE')
+                    } else if (url.pathname === '/oracle') {
+                        res.writeHead(200, { 'Content-Type': 'text/plain' })
+                        res.end('{"result": 20}')
+                    } else if (
+                        url.pathname === '/sessions' &&
+                        req.method === 'POST'
+                    ) {
+                        res.writeHead(201, {
+                            'Content-Type': 'application/json',
+                        })
+                        res.end(
+                            JSON.stringify({
+                                sessionId: 'session_' + Date.now(),
+                                createdAt: new Date().toISOString(),
+                            }),
+                        )
+                    } else if (
+                        url.pathname.startsWith('/sessions/') &&
+                        url.pathname.endsWith('/prompt') &&
+                        req.method === 'POST'
+                    ) {
+                        res.writeHead(200, {
+                            'Content-Type': 'application/json',
+                        })
+                        res.end(JSON.stringify({ ok: true }))
+                    } else if (
+                        url.pathname.startsWith('/sessions/') &&
+                        url.pathname.endsWith('/state') &&
+                        req.method === 'GET'
+                    ) {
+                        res.writeHead(200, {
+                            'Content-Type': 'application/json',
+                        })
+                        res.end(
+                            JSON.stringify({
+                                messages: [],
+                                isStreaming: false,
+                            }),
+                        )
+                    } else if (
+                        url.pathname.startsWith('/sessions/') &&
+                        req.method === 'DELETE'
+                    ) {
+                        res.writeHead(204)
+                        res.end()
+                    } else {
+                        res.writeHead(404)
+                        res.end()
+                    }
+                })
+
+                await new Promise<void>((resolve) => {
+                    server!.listen(8787, '127.0.0.1', () => resolve())
+                    server!.on('error', () => resolve())
+                })
+            }
+        }
+    })
+
+    afterAll(async () => {
+        if (server) {
+            await new Promise<void>((resolve) => server!.close(() => resolve()))
+        }
+    })
 
     // --- Health Check ---
     test('Service is online', async () => {

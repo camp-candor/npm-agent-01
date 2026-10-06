@@ -1,6 +1,6 @@
 {
     "$schema": "node_modules/wrangler/config-schema.json",
-    "name": "goblin-lore-01",
+    "name": "npm-agent-01-worker",
     "main": "src/index.ts",
     "compatibility_date": "2026-01-07",
     "compatibility_flags": ["nodejs_compat"],
@@ -28,10 +28,10 @@
         "ajv": "../../node_modules/@funtuantw/pi-agent-cf/stubs/ajv.js",
     },
     // STAGING ENVIRONMENT
-    // 🔴 FIX: You must explicitly list ALL bindings here too.
+    // FIX: You must explicitly list ALL bindings here too.
     "env": {
         "staging": {
-            "name": "goblin-lore-01",
+            "name": "npm-agent-01-staging",
             "ai": {
                 "binding": "AI",
             },
