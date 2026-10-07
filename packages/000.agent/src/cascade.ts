@@ -8,26 +8,26 @@ let envLoaded = false
  * Ascends the directory tree from process.cwd() to locate the monorepo root .env file.
  */
 export const resolveRootEnv = (): string | null => {
-  let curr = process.cwd()
-  while (curr && curr !== path.dirname(curr)) {
-    const candidate = path.join(curr, '.env')
-    if (fs.existsSync(candidate)) {
-      return candidate
+    let curr = process.cwd()
+    while (curr && curr !== path.dirname(curr)) {
+        const candidate = path.join(curr, '.env')
+        if (fs.existsSync(candidate)) {
+            return candidate
+        }
+        curr = path.dirname(curr)
     }
-    curr = path.dirname(curr)
-  }
-  return null
+    return null
 }
 
 const ensureEnv = () => {
-  if (envLoaded) return
-  const rootEnv = resolveRootEnv()
-  if (rootEnv) {
-    dotenv.config({ path: rootEnv })
-  } else {
-    dotenv.config()
-  }
-  envLoaded = true
+    if (envLoaded) return
+    const rootEnv = resolveRootEnv()
+    if (rootEnv) {
+        dotenv.config({ path: rootEnv })
+    } else {
+        dotenv.config()
+    }
+    envLoaded = true
 }
 
 /**
@@ -40,16 +40,16 @@ const ensureEnv = () => {
  * Enforces trailing-slash sanitization per invocation.
  */
 export const getBaseUrl = (): string => {
-  ensureEnv()
+    ensureEnv()
 
-  const raw =
-    (global as any).agentBaseUrl ||
-    (global as any).packageBaseUrl ||
-    process.env.LIVE_WORKER_URL ||
-    process.env.WORKER_URL ||
-    'https://npm-agent-01-staging.berad4000.workers.dev'
+    const raw =
+        (global as any).agentBaseUrl ||
+        (global as any).packageBaseUrl ||
+        process.env.LIVE_WORKER_URL ||
+        process.env.WORKER_URL ||
+        'https://npm-agent-01-staging.berad4000.workers.dev'
 
-  return String(raw).trim().replace(/\/+$/, '')
+    return String(raw).trim().replace(/\/+$/, '')
 }
 
 /**
@@ -58,9 +58,9 @@ export const getBaseUrl = (): string => {
  *   https:// -> wss://
  */
 export const getBaseWsUrl = (): string => {
-  const httpUrl = getBaseUrl()
-  if (httpUrl.startsWith('https://')) {
-    return httpUrl.replace(/^https:\/\//, 'wss://')
-  }
-  return httpUrl.replace(/^http:\/\//, 'ws://')
+    const httpUrl = getBaseUrl()
+    if (httpUrl.startsWith('https://')) {
+        return httpUrl.replace(/^https:\/\//, 'wss://')
+    }
+    return httpUrl.replace(/^http:\/\//, 'ws://')
 }

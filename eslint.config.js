@@ -1,3 +1,4 @@
+// eslint.config.js
 import js from '@eslint/js'
 import tseslint from 'typescript-eslint'
 import globals from 'globals'

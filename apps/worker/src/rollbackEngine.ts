@@ -1,9 +1,5 @@
 // apps/worker/src/rollbackEngine.ts
-import {
-    githubRequest,
-    PROTECTED_BRANCHES,
-    type Env,
-} from './tools.core.js'
+import { githubRequest, PROTECTED_BRANCHES, type Env } from './tools.core.js'
 import { redactSecrets } from './redaction.js'
 
 // ============================================================================
@@ -42,7 +38,10 @@ export async function executeSagaRollback(
 
     let prClosed = false
     let branchDeleted = false
-    const stageLog: Record<string, any> = { sagaId, reason: redactSecrets(reason) }
+    const stageLog: Record<string, any> = {
+        sagaId,
+        reason: redactSecrets(reason),
+    }
 
     // ------------------------------------------------------------------------
     // Stage 1: Execution Invalidation & Quarantine
@@ -58,10 +57,14 @@ export async function executeSagaRollback(
     // ------------------------------------------------------------------------
     if (prNumber && prNumber > 0) {
         try {
-            await githubRequest(`/repos/${owner}/${repo}/pulls/${prNumber}`, env, {
-                method: 'PATCH',
-                body: JSON.stringify({ state: 'closed' }),
-            })
+            await githubRequest(
+                `/repos/${owner}/${repo}/pulls/${prNumber}`,
+                env,
+                {
+                    method: 'PATCH',
+                    body: JSON.stringify({ state: 'closed' }),
+                },
+            )
             prClosed = true
 
             const tombstoneBody =
@@ -80,7 +83,11 @@ export async function executeSagaRollback(
                 },
             ).catch(() => {})
 
-            stageLog.stage2 = { action: 'PR_CLOSED', prNumber, status: 'SUCCESS' }
+            stageLog.stage2 = {
+                action: 'PR_CLOSED',
+                prNumber,
+                status: 'SUCCESS',
+            }
         } catch (err: any) {
             const msg = String(err.message || '')
             // Idempotent Absorption: 404 (Not Found) or 422 (Already Closed / Unprocessable)

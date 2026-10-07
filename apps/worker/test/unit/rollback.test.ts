@@ -26,31 +26,33 @@ describe('Watchdog Circuit Breaker & 4-Stage Compensating Saga Rollback (apps/wo
     it('executes full 4-stage compensating teardown', async () => {
         const calls: string[] = []
 
-        globalThis.fetch = vi.fn().mockImplementation((url: string, opts?: any) => {
-            calls.push(`${opts?.method || 'GET'} ${url}`)
-            if (url.includes('/pulls/42')) {
-                return Promise.resolve({
-                    ok: true,
-                    status: 200,
-                    json: async () => ({ number: 42, state: 'closed' }),
-                })
-            }
-            if (url.includes('/issues/42/comments')) {
-                return Promise.resolve({
-                    ok: true,
-                    status: 201,
-                    json: async () => ({ id: 101, body: 'tombstone' }),
-                })
-            }
-            if (url.includes('/git/refs/heads/spec/TASK-01-abc1234')) {
-                return Promise.resolve({
-                    ok: true,
-                    status: 204,
-                    json: async () => ({}),
-                })
-            }
-            return Promise.reject(new Error(`Unexpected url: ${url}`))
-        })
+        globalThis.fetch = vi
+            .fn()
+            .mockImplementation((url: string, opts?: any) => {
+                calls.push(`${opts?.method || 'GET'} ${url}`)
+                if (url.includes('/pulls/42')) {
+                    return Promise.resolve({
+                        ok: true,
+                        status: 200,
+                        json: async () => ({ number: 42, state: 'closed' }),
+                    })
+                }
+                if (url.includes('/issues/42/comments')) {
+                    return Promise.resolve({
+                        ok: true,
+                        status: 201,
+                        json: async () => ({ id: 101, body: 'tombstone' }),
+                    })
+                }
+                if (url.includes('/git/refs/heads/spec/TASK-01-abc1234')) {
+                    return Promise.resolve({
+                        ok: true,
+                        status: 204,
+                        json: async () => ({}),
+                    })
+                }
+                return Promise.reject(new Error(`Unexpected url: ${url}`))
+            })
 
         const receipt = await executeSagaRollback({
             owner: 'camp-candor',
@@ -69,9 +71,19 @@ describe('Watchdog Circuit Breaker & 4-Stage Compensating Saga Rollback (apps/wo
         expect(receipt.details.stage3.status).toBe('SUCCESS')
         expect(receipt.details.stage4.status).toBe('S_CLEAN_PINNED')
 
-        expect(calls.some((c) => c.startsWith('PATCH') && c.includes('/pulls/42'))).toBe(true)
-        expect(calls.some((c) => c.startsWith('POST') && c.includes('/comments'))).toBe(true)
-        expect(calls.some((c) => c.startsWith('DELETE') && c.includes('/spec/TASK-01-abc1234'))).toBe(true)
+        expect(
+            calls.some((c) => c.startsWith('PATCH') && c.includes('/pulls/42')),
+        ).toBe(true)
+        expect(
+            calls.some((c) => c.startsWith('POST') && c.includes('/comments')),
+        ).toBe(true)
+        expect(
+            calls.some(
+                (c) =>
+                    c.startsWith('DELETE') &&
+                    c.includes('/spec/TASK-01-abc1234'),
+            ),
+        ).toBe(true)
     })
 
     it('rejects attempt to delete protected branch', async () => {
@@ -83,7 +95,9 @@ describe('Watchdog Circuit Breaker & 4-Stage Compensating Saga Rollback (apps/wo
                 reason: 'unauthorized attempt',
                 env: mockEnv,
             }),
-        ).rejects.toThrow(/SECURITY_BREACH: Refusal to delete protected\/non-spec branch: main/)
+        ).rejects.toThrow(
+            /SECURITY_BREACH: Refusal to delete protected\/non-spec branch: main/,
+        )
 
         await expect(
             executeSagaRollback({
@@ -93,7 +107,9 @@ describe('Watchdog Circuit Breaker & 4-Stage Compensating Saga Rollback (apps/wo
                 reason: 'unauthorized attempt',
                 env: mockEnv,
             }),
-        ).rejects.toThrow(/SECURITY_BREACH: Refusal to delete protected\/non-spec branch: master/)
+        ).rejects.toThrow(
+            /SECURITY_BREACH: Refusal to delete protected\/non-spec branch: master/,
+        )
     })
 
     it('absorbs already-deleted 404 branch cleanly', async () => {
@@ -127,7 +143,9 @@ describe('Watchdog Circuit Breaker & 4-Stage Compensating Saga Rollback (apps/wo
                 return Promise.resolve({
                     ok: false,
                     status: 422,
-                    json: async () => ({ message: 'Pull request is already closed' }),
+                    json: async () => ({
+                        message: 'Pull request is already closed',
+                    }),
                 })
             }
             return Promise.reject(new Error(`Unexpected url: ${url}`))
