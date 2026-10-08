@@ -12,6 +12,7 @@ import type State from '../../99.core/state.js'
 import * as Align from '../../val/align.js'
 import * as Color from '../../val/console-color.js'
 import { getBaseUrl, resolveRootEnv } from '../../src/cascade.js'
+import { getRepoIdentity } from '../../src/identity.js'
 
 let bit: any
 let rootSlv: any
@@ -64,13 +65,14 @@ export const initMenu = async (cpy: MenuModel, bal: MenuBit, ste: State) => {
         dat: { net: bit.grdBit.dat, src: 'alligator0' },
     })
 
+    const { titleBanner } = getRepoIdentity()
     bit = await global.LIBRARY.hunt(UPDATE_CONSOLE, {
         idx: 'cns00',
         src: '-----------',
     })
     bit = await global.LIBRARY.hunt(UPDATE_CONSOLE, {
         idx: 'cns00',
-        src: 'AGENT MENU',
+        src: titleBanner,
     })
     bit = await global.LIBRARY.hunt(UPDATE_CONSOLE, {
         idx: 'cns00',

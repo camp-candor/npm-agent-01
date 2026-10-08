@@ -66,7 +66,7 @@ const getExistingPackages = () => {
 
 // 2. Logic to run AFTER build
 const init = async () => {
-    console.log('⚡ Initialization started...')
+    console.log('>> Initialization started...')
 
     global.window = global as any
 
@@ -98,7 +98,7 @@ const init = async () => {
         await new Promise((resolve) => setTimeout(resolve, 10))
 
         await LIBRARY.hunt(MENU_ACTION_LIBRARY.PRINT_MENU, {
-            src: '✅ Init complete',
+            src: '[OK] Init complete',
         })
 
         // Register each active package into the Blessed Menu registry
@@ -149,7 +149,7 @@ const init = async () => {
 
         await LIBRARY.hunt(MENU_ACTION_LIBRARY.OPEN_MENU, { src: '' })
     } catch (err) {
-        console.error('❌ Runtime Error:', err)
+        console.error('[FAIL] Runtime Error:', err)
         process.exit(1)
     }
 }
@@ -157,7 +157,7 @@ const init = async () => {
 // 3. Main Execution Flow: Build library and any active packages
 const main = async () => {
     try {
-        console.log('🔨 Building TypeScript...')
+        console.log('>> Building TypeScript...')
         const existingPackages = getExistingPackages()
         const buildTargets = [
             '995.library',
@@ -173,7 +173,7 @@ const main = async () => {
 
         await init()
     } catch (err: any) {
-        console.error('❌ Build Failed:')
+        console.error('[FAIL] Build Failed:')
         console.error(err.stdout || err.message)
         process.exit(1)
     }
