@@ -89,25 +89,7 @@ for (const key of requiredWorkerKeys) {
 }
 console.log('>> [OK] Worker .dev.vars required key contracts satisfied.');
 
-// 5. Git Exclusion & Gitignore Fence Audit
-let gitIgnored = false;
-try {
-    const checkRootEnv = execSync('git check-ignore .env', { encoding: 'utf8' }).trim();
-    const checkWorkerVars = execSync('git check-ignore apps/worker/.dev.vars', { encoding: 'utf8' }).trim();
-    if (checkRootEnv === '.env' && checkWorkerVars.includes('.dev.vars')) {
-        gitIgnored = true;
-    }
-} catch {
-    gitIgnored = false;
-}
-
-if (!gitIgnored) {
-    console.error(':: [FAIL] Security violation: .env or .dev.vars is NOT matched by .gitignore!');
-    process.exit(1);
-}
-console.log('>> [OK] Gitignore fence confirmed: credentials excluded from git tracking.');
-
-// 6. Assert Git Tracking Status (Zero Tracked Secrets)
+// 5. Assert Git Tracking Status (Zero Tracked Secrets)
 try {
     const trackedFiles = execSync('git ls-files .env apps/worker/.dev.vars', { encoding: 'utf8' }).trim();
     if (trackedFiles.length > 0) {
@@ -120,6 +102,24 @@ try {
     process.exit(1);
 }
 console.log('>> [OK] Index verified clean: credential files not staged or tracked.');
+
+// 6. Git Exclusion & Gitignore Fence Audit
+let gitIgnored = false;
+try {
+    const checkRootEnv = execSync('git check-ignore --no-index .env', { encoding: 'utf8' }).trim();
+    const checkWorkerVars = execSync('git check-ignore --no-index apps/worker/.dev.vars', { encoding: 'utf8' }).trim();
+    if (checkRootEnv === '.env' && checkWorkerVars.includes('.dev.vars')) {
+        gitIgnored = true;
+    }
+} catch {
+    gitIgnored = false;
+}
+
+if (!gitIgnored) {
+    console.error(':: [FAIL] Security violation: .env or .dev.vars is NOT matched by .gitignore!');
+    process.exit(1);
+}
+console.log('>> [OK] Gitignore fence confirmed: credentials excluded from git tracking.');
 
 // 7. Assert Immutable Runner Boundary Cleanliness
 try {
