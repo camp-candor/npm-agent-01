@@ -35,32 +35,25 @@ describe('4-Tier Resolution Cascade & Protocol Derivation (000.agent)', () => {
     })
 
     it('Tier 3: falls back to LIVE_WORKER_URL or WORKER_URL when globals are absent', () => {
-        process.env.LIVE_WORKER_URL = 'https://env-worker.workers.dev///'
+        process.env.LIVE_WORKER_URL =
+            'https://env-worker.example.workers.dev///'
 
-        expect(getBaseUrl()).toBe('https://env-worker.workers.dev')
-        expect(getBaseWsUrl()).toBe('wss://env-worker.workers.dev')
+        expect(getBaseUrl()).toBe('https://env-worker.example.workers.dev')
+        expect(getBaseWsUrl()).toBe('wss://env-worker.example.workers.dev')
     })
 
-    it('Tier 4: resolves canonical staging default when all pointers are missing', () => {
-        expect(getBaseUrl()).toBe(
-            'https://npm-agent-01-staging.berad4000.workers.dev',
-        )
-        expect(getBaseWsUrl()).toBe(
-            'wss://npm-agent-01-staging.berad4000.workers.dev',
-        )
+    it('Tier 4: resolves canonical loopback default when all pointers are missing', () => {
+        expect(getBaseUrl()).toBe('http://127.0.0.1:8787')
+        expect(getBaseWsUrl()).toBe('ws://127.0.0.1:8787')
     })
 
     it('The Never-Cache Invariant: resolves dynamically across successive dispatches', () => {
-        expect(getBaseUrl()).toBe(
-            'https://npm-agent-01-staging.berad4000.workers.dev',
-        )
-
-        ;(global as any).agentBaseUrl = 'http://127.0.0.1:8787'
         expect(getBaseUrl()).toBe('http://127.0.0.1:8787')
 
+        ;(global as any).agentBaseUrl = 'http://127.0.0.1:9999'
+        expect(getBaseUrl()).toBe('http://127.0.0.1:9999')
+
         delete (global as any).agentBaseUrl
-        expect(getBaseUrl()).toBe(
-            'https://npm-agent-01-staging.berad4000.workers.dev',
-        )
+        expect(getBaseUrl()).toBe('http://127.0.0.1:8787')
     })
 })

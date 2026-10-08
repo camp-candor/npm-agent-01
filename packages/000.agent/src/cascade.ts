@@ -31,11 +31,11 @@ const ensureEnv = () => {
 }
 
 /**
- * Resolves the outbound HTTP base URL according to the 4-Tier Precedence Cascade:
+ * Resolves the outbound HTTP base URL across the 4-Tier Precedence Cascade:
  *   Tier 1: (global as any).agentBaseUrl (Active local/live switchboard pointer)
  *   Tier 2: (global as any).packageBaseUrl (Domain package override)
  *   Tier 3: process.env.LIVE_WORKER_URL || process.env.WORKER_URL (Environment bindings)
- *   Tier 4: Canonical Staging Fallback (npm-agent-01-staging.berad4000.workers.dev)
+ *   Tier 4: Default loopback fallback ('http://127.0.0.1:8787')
  *
  * Enforces trailing-slash sanitization per invocation.
  */
@@ -47,7 +47,7 @@ export const getBaseUrl = (): string => {
         (global as any).packageBaseUrl ||
         process.env.LIVE_WORKER_URL ||
         process.env.WORKER_URL ||
-        'https://npm-agent-01-staging.berad4000.workers.dev'
+        'http://127.0.0.1:8787'
 
     return String(raw).trim().replace(/\/+$/, '')
 }

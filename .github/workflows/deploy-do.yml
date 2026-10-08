@@ -8,6 +8,13 @@ on:
             - 'packages/**'
     workflow_dispatch:
 
+concurrency:
+    group: deploy-${{ github.ref }}
+    cancel-in-progress: false
+
+permissions:
+    contents: read
+
 jobs:
     deploy:
         runs-on: ubuntu-latest
@@ -33,16 +40,19 @@ jobs:
             - name: Deploy to Cloudflare Staging
               working-directory: apps/worker
               run: |
-                  echo "${{ secrets.AI_GATEWAY_TOKEN }}" | npx wrangler secret put AI_GATEWAY_TOKEN --env staging
+                  if [ -n "${{ secrets.AI_GATEWAY_TOKEN }}" ]; then
+                    echo "${{ secrets.AI_GATEWAY_TOKEN }}" | npx wrangler secret put AI_GATEWAY_TOKEN --env staging
+                  fi
                   echo "$RUNTIME_GITHUB_TOKEN" | npx wrangler secret put GITHUB_TOKEN --env staging
                   npx wrangler deploy --env staging --var GITHUB_DEFAULT_OWNER:"$DEFAULT_OWNER"
               env:
                   CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
                   CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-                  RUNTIME_GITHUB_TOKEN: ${{ secrets.REPO_BOT_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
-                  DEFAULT_OWNER: ${{ vars.GITHUB_DEFAULT_OWNER || 'camp-candor' }}
+                  RUNTIME_GITHUB_TOKEN: ${{ secrets.AGENT_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+                  DEFAULT_OWNER: ${{ vars.GITHUB_DEFAULT_OWNER || github.repository_owner }}
 
-            - name: Run Live Staging Audit Gauntlet
+            - name: Run Live Staging Audit
+              if: ${{ vars.STAGING_WORKER_URL != '' }}
               run: npm run test:audit:staging --workspace=@camp_candor/agent
               env:
-                  STAGING_URL: ${{ vars.STAGING_WORKER_URL || 'https://npm-agent-01-staging.berad4000.workers.dev' }}
+                  STAGING_URL: ${{ vars.STAGING_WORKER_URL }}

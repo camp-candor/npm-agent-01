@@ -1,3 +1,9 @@
-# Preserve downstream custom tools and local wrangler bindings during upstream merges
+# ==============================================================================
+# :: UPSTREAM MERGE SHIELDS
+# ==============================================================================
+# Protects downstream sovereign customizations when pulling updates from
+# the upstream template repository.
+
 apps/worker/src/tools.custom.ts merge=ours
 apps/worker/wrangler.jsonc merge=ours
+.env merge=ours

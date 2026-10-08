@@ -27,8 +27,6 @@
     "alias": {
         "ajv": "../../node_modules/@funtuantw/pi-agent-cf/stubs/ajv.js",
     },
-    // STAGING ENVIRONMENT
-    // FIX: You must explicitly list ALL bindings here too.
     "env": {
         "staging": {
             "name": "npm-agent-01-staging",
