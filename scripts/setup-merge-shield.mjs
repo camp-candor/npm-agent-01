@@ -87,7 +87,14 @@ if (originUrl && originUrl.includes('camp-candor/npm-agent-01') && !upstreamUrl)
 } else if (upstreamUrl) {
     console.log('>> [OK] "upstream" remote already configured:', upstreamUrl);
 } else {
-    console.log('>> [INFO] "origin" is not pointing to camp-candor/npm-agent-01; skipping automatic rename.');
+    console.log('>> [REMAP] "origin" is downstream fork; adding missing "upstream" remote pointing to template archetype...');
+    try {
+        execSync('git remote add upstream https://github.com/camp-candor/npm-agent-01', { stdio: 'pipe' });
+        console.log('>> [OK] Added "upstream" remote pointing to https://github.com/camp-candor/npm-agent-01.');
+    } catch (err) {
+        console.error(':: [FAIL] Failed to add upstream remote:', err.message);
+        process.exit(1);
+    }
 }
 
 // Allow passing new downstream origin via CLI argument: node scripts/setup-merge-shield.mjs <new-origin-url>
