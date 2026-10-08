@@ -1,7 +1,6 @@
-1. Evict Legacy Domain Artifacts & Mount the DevOps Tool Suite (apps/worker)
-2. Normalize Package Identity & Scrub Phantom Scripts
-3. Decouple Tool Registration & Enforce the $S_{\text{clean}}$ Firewall
-4. Align the Dynamic Switchboard & Endpoint Cascade (packages/000.agent)
-5. Reconcile Test Suites & Runner Boundaries
+ 1. Repository Inception & Remote Remapping
 
-/extreme-details /task-list /jules-task /tgrav-check
+### Phase 2: Remote Topology Remapping & Upstream Merge Shield
+### Phase 3: Monorepo Dependency Hydration
+### Phase 4: Environment Initialization & Secret Injection
+### Phase 5: Baseline Verification, Trunk Sealing & Release Tagging
