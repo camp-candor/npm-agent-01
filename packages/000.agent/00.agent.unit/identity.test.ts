@@ -10,10 +10,17 @@ describe('Dynamic Repository Identity Resolver (000.agent)', () => {
 
     it('formats title banner using repo name followed by version number', () => {
         const identity = getRepoIdentity()
+        const { pkg } = resolveRootPackageJson()
+        const expectedName = String(pkg.name)
+            .replace(/^@[^/]+\//, '')
+            .trim()
         const legacyToken = ['repo', 'bot'].join('-')
+
         expect(identity.name.toLowerCase()).not.toContain(legacyToken)
-        expect(identity.name).toBe('npm-agent-01')
-        expect(identity.titleBanner).toMatch(/^npm-agent-01 v\d+\.\d+\.\d+$/)
+        expect(identity.name).toBe(expectedName)
+        expect(identity.titleBanner).toMatch(
+            new RegExp(`^${expectedName} v\\d+\\.\\d+\\.\\d+$`),
+        )
     })
 
     it('dynamically adapts when run against a downstream repo manifest', () => {
