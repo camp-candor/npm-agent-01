@@ -29,6 +29,7 @@
         "test:agent": "npm run test --workspace=@camp_candor/000.agent",
         "test:library": "npm run test --workspace=@camp_candor/995.library",
         "//__ AUDIT & VERIFICATION _________________": "",
+        "check:env": "node scripts/audit-environment.mjs",
         "check:ingress": "node scripts/audit-ingress.mjs",
         "check:hydration": "node scripts/audit-hydration.mjs",
         "setup:shield": "node scripts/setup-merge-shield.mjs",
