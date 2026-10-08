@@ -17,34 +17,40 @@ env:
     HUSKY: 0
 
 jobs:
-    checks:
-        name: build, types & test gauntlet
+    gauntlet:
+        name: monorepo verification gauntlet
         runs-on: ubuntu-latest
         steps:
-            - name: Checkout
+            - name: Checkout Repository
               uses: actions/checkout@v4
               with:
                   ref: ${{ github.event_name == 'pull_request' && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.ref }}
 
-            - name: Setup Node
+            - name: Setup Node Runtime
               uses: actions/setup-node@v4
               with:
                   node-version: '20'
                   cache: npm
 
-            - name: Install dependencies
+            - name: Install Monorepo Dependencies
               run: npm ci
 
-            - name: Verify Types across Project References
+            - name: Gate 0 -- Assert Immutable Runner Boundary
+              run: npm run check:boundary
+
+            - name: Gate 1 -- Assert 7-Bit Pure ASCII Compliance
+              run: npm run check:sentry
+
+            - name: Gate 2 -- Assert Zero Leaked Source Artifacts
+              run: npm run check:artifacts
+
+            - name: Gate 3 -- Verify TypeScript Project References
               run: npm run check:types
 
-            - name: Execute Full Monorepo Test Gauntlet
-              run: npm test
-
-            - name: Assert Immutable Runner Boundary
+            - name: Gate 4 -- Verify Code Formatting and Lint Quality
               run: |
-                  if [ -n "$(git status -s apps/995.library/995.library/)" ]; then
-                    echo "::error::IMMUTABLE HARNESS BOUNDARY BREACHED in apps/995.library/995.library/"
-                    git status -s apps/995.library/995.library/
-                    exit 1
-                  fi
+                  npm run prettier:check
+                  npm run lint:check
+
+            - name: Gate 5 -- Execute Monorepo Sequential Test Battery
+              run: npm test

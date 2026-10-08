@@ -50,13 +50,12 @@ jobs:
 
             - name: Mint and Publish GitHub Release
               env:
-                  # Evaluates custom repository secret GH_TOKEN first, falling back to built-in GITHUB_TOKEN
                   GH_TOKEN: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
                   GITHUB_TOKEN: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
               run: |
                   TAG_NAME="${{ github.ref_name }}"
                   echo "Publishing automated GitHub Release for ${TAG_NAME}..."
                   gh release create "${TAG_NAME}" \
-                    --title "${TAG_NAME}: Edge DevOps Control Plane & Autonomous Agent Boilerplate" \
+                    --title "${TAG_NAME}: 955.library Terminal Cockpit & Local Agent Baseline" \
                     --generate-notes \
                     --latest
