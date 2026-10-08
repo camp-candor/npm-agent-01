@@ -51,6 +51,7 @@
         "clean:js": "find apps/worker/src packages/000.agent -name '*.js' -o -name '*.d.ts' -delete",
         "reset": "npm run clean && rm -rf node_modules package-lock.json && npm install && npm run build",
         "//__ DEPLOYMENT ___________________________": "",
+        "release:seal": "node scripts/seal-baseline.mjs",
         "ship:staging": "npm run build && npm run deploy --workspace=@camp_candor/agent -- --env staging && npm run audit:staging"
     },
     "lint-staged": {
