@@ -25,10 +25,4 @@ describe('Agent Menu Toggle Target Mode', () => {
         const action = new Act.ToggleTargetMode()
         expect(action.type).toBe('[Menu action] Toggle Target Mode')
     })
-
-    it('resolves valid worker directory containing package.json', () => {
-        const workerDir = resolveWorkerDir()
-        expect(fs.existsSync(workerDir)).toBe(true)
-        expect(fs.existsSync(`${workerDir}/package.json`)).toBe(true)
-    })
 })

@@ -21,8 +21,5 @@
     },
     "files": [],
     "exclude": ["node_modules", "dist"],
-    "references": [
-        { "path": "./packages/000.agent" },
-        { "path": "./apps/worker" }
-    ]
+    "references": [{ "path": "./packages/000.agent" }]
 }
