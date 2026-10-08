@@ -29,6 +29,7 @@
         "test:agent": "npm run test --workspace=@camp_candor/000.agent",
         "test:library": "npm run test --workspace=@camp_candor/995.library",
         "//__ AUDIT & VERIFICATION _________________": "",
+        "check:ingress": "node scripts/audit-ingress.mjs",
         "audit:local": "npm run test:audit:local --workspace=@camp_candor/agent",
         "audit:staging": "npm run test:audit:staging --workspace=@camp_candor/agent",
         "verify:local": "start-server-and-test worker:dev http://127.0.0.1:8787 audit:local",
