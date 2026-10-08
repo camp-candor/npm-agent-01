@@ -36,7 +36,7 @@ export function resolveRootPackageJson(startDir: string = process.cwd()): {
                     return { pkg, rootDir: curr }
                 }
             } catch {
-                // Ignore parse errors on intermediate manifests
+                // Ignore parse errors on intermediate files
             }
         }
         curr = path.dirname(curr)
@@ -61,21 +61,21 @@ export function getRepoIdentity(startDir?: string): RepoIdentity {
     const rawName =
         pkg.name || pkg.label || path.basename(rootDir) || 'npm-agent-01'
 
-    // Clean scope prefix (@camp_candor/000.repo-bot -> 000.repo-bot)
-    const cleanName = String(rawName)
+    // Strip scope (@camp_candor/npm-agent-01 -> npm-agent-01)
+    const name = String(rawName)
         .replace(/^@[^/]+\//, '')
         .trim()
+    const label = name.toUpperCase()
+    const rawVersion = pkg.version
+        ? String(pkg.version).replace(/^v/, '')
+        : '0.1.0'
+    const version = `v${rawVersion}`
 
-    // Uppercase label
-    const label = cleanName.toUpperCase()
-
-    // Semantic version with clean fallback
-    const version = pkg.version ? `v${pkg.version.replace(/^v/, '')}` : 'v0.1.0'
-
-    const titleBanner = `${label} ${version.toUpperCase()}`
+    // Formatted banner: "npm-agent-01 v0.1.1" or "NPM-AGENT-01 V0.1.1"
+    const titleBanner = `${name} ${version}`
 
     const identity: RepoIdentity = {
-        name: cleanName,
+        name,
         label,
         version,
         titleBanner,

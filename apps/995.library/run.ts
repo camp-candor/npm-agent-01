@@ -64,6 +64,34 @@ const getExistingPackages = () => {
     return results
 }
 
+const getRootIdentity = () => {
+    let curr = process.cwd()
+    while (curr && curr !== path.dirname(curr)) {
+        const pkgPath = path.join(curr, 'package.json')
+        if (fs.existsSync(pkgPath)) {
+            try {
+                const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'))
+                if (pkg.workspaces || fs.existsSync(path.join(curr, '.git'))) {
+                    const rawName =
+                        pkg.name || path.basename(curr) || 'npm-agent-01'
+                    const name = String(rawName).replace(/^@[^/]+\//, '').trim()
+                    const rawVersion = pkg.version
+                        ? String(pkg.version).replace(/^v/, '')
+                        : '0.1.0'
+                    const version = `v${rawVersion}`
+                    return { name, version, titleBanner: `${name} ${version}` }
+                }
+            } catch {}
+        }
+        curr = path.dirname(curr)
+    }
+    return {
+        name: 'npm-agent-01',
+        version: 'v0.1.0',
+        titleBanner: 'npm-agent-01 v0.1.0',
+    }
+}
+
 // 2. Logic to run AFTER build
 const init = async () => {
     console.log('>> Initialization started...')
@@ -90,6 +118,29 @@ const init = async () => {
             src: null,
             idx: idx,
         })
+
+        const identity = getRootIdentity()
+        const CONSOLE_ACTION_LIBRARY = require(
+            path.join(libPath, '83.console.unit/console.action'),
+        )
+        const cnsBit = await LIBRARY.hunt(CONSOLE_ACTION_LIBRARY.READ_CONSOLE, {
+            idx: 'cns00',
+        })
+        const logWidget = cnsBit?.cnsBit?.dat?.bit
+        if (logWidget && Array.isArray(logWidget.logLines)) {
+            const libPkgPath = path.resolve(import.meta.dirname, './package.json')
+            const libPkg = fs.existsSync(libPkgPath)
+                ? JSON.parse(fs.readFileSync(libPkgPath, 'utf8'))
+                : { version: '1.0.12' }
+            logWidget.logLines = [
+                '-----------',
+                `${identity.name} ${identity.version}`,
+                `LIBRARY V${libPkg.version}`,
+                '-----------',
+            ]
+            logWidget.setItems(logWidget.logLines)
+            if (logWidget.screen) logWidget.screen.render()
+        }
 
         const MENU_ACTION_LIBRARY = require(
             path.join(libPath, '98.menu.unit/menu.action'),

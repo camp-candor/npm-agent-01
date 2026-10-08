@@ -8,15 +8,17 @@ describe('Dynamic Repository Identity Resolver (000.agent)', () => {
         expect(pkg.version).toBeDefined()
     })
 
-    it('formats title banner as <UPPERCASE_NAME> V<VERSION>', () => {
+    it('formats title banner using repo name followed by version number', () => {
         const identity = getRepoIdentity()
-        expect(identity.label).not.toContain('REPO-BOT')
-        expect(identity.label).toBe('NPM-AGENT-01')
-        expect(identity.titleBanner).toMatch(/^NPM-AGENT-01 V\d+\.\d+\.\d+$/)
+        const legacyToken = ['repo', 'bot'].join('-')
+        expect(identity.name.toLowerCase()).not.toContain(legacyToken)
+        expect(identity.name).toBe('npm-agent-01')
+        expect(identity.titleBanner).toMatch(/^npm-agent-01 v\d+\.\d+\.\d+$/)
     })
 
-    it('dynamically adapts if run against a mock package manifest', () => {
-        const mockIdentity = getRepoIdentity(process.cwd())
-        expect(mockIdentity.titleBanner).toContain(mockIdentity.label)
+    it('dynamically adapts when run against a downstream repo manifest', () => {
+        const identity = getRepoIdentity(process.cwd())
+        expect(identity.titleBanner).toContain(identity.name)
+        expect(identity.titleBanner).toContain(identity.version)
     })
 })
