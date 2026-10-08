@@ -1,6 +1,6 @@
 {
     "name": "npm-agent-01",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "type": "module",
     "private": true,
     "description": "Deterministic Edge DevOps Control Plane and Terminal Agent Template",
