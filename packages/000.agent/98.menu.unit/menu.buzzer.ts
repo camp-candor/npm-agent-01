@@ -1,3 +1,4 @@
 export { initMenu } from './buz/00.menu.buzz.js'
 export { updateMenu } from './buz/00.menu.buzz.js'
-export { toggleTargetMode } from './buz/00.menu.buzz.js'
+export { runDoctor } from './buz/00.menu.buzz.js'
+export { systemInfo } from './buz/00.menu.buzz.js'
