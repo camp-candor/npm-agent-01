@@ -1,72 +1,51 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { initagent } from './buz/agent.buzz.js'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { initagent, testagent, listagent } from './buz/agent.buzz.js'
 import { AgentModel } from './agent.model.js'
-import { getBaseUrl } from '../src/cascade.js'
+import { getRepoIdentity } from '../src/identity.js'
 
-describe('agent unit buzzers', () => {
-    const originalFetch = globalThis.fetch
-
+describe('agent unit buzzers (Local Offline Mode)', () => {
     beforeEach(() => {
         vi.restoreAllMocks()
-        delete (global as any).agentBaseUrl
     })
 
-    afterEach(() => {
-        globalThis.fetch = originalFetch
-        delete (global as any).agentBaseUrl
-    })
-
-    it('should query health endpoint on initagent', async () => {
+    it('should return local identity status on initagent', () => {
         const model = new AgentModel()
         const state = {} as any
         const slv = vi.fn()
         const bal = { idx: 'test', slv } as any
-
-        const expectedUrl = `${getBaseUrl()}/health`
-        const mockHealth = { status: 'healthy', service: 'npm-agent-01-worker' }
-
-        globalThis.fetch = vi.fn().mockImplementation((url: string) => {
-            if (url === expectedUrl) {
-                return Promise.resolve({
-                    ok: true,
-                    json: async () => mockHealth,
-                } as any)
-            }
-            return Promise.reject(new Error(`Unexpected url: ${url}`))
-        })
+        const identity = getRepoIdentity()
 
         initagent(model, bal, state)
 
-        await new Promise((resolve) => setTimeout(resolve, 10))
-
-        expect(globalThis.fetch).toHaveBeenCalledWith(expectedUrl)
         expect(slv).toHaveBeenCalledWith({
             intBit: {
                 idx: 'init-agent',
-                dat: {
-                    status: 'connected',
-                    health: mockHealth,
-                },
+                dat: expect.objectContaining({
+                    status: 'local',
+                    service: identity.name,
+                }),
             },
         })
     })
 
-    it('should handle fetch errors gracefully on initagent', async () => {
+    it('should handle testagent buzzer with val 1', () => {
         const model = new AgentModel()
-        const state = {} as any
         const slv = vi.fn()
-        const bal = { idx: 'test', slv } as any
-
-        globalThis.fetch = vi
-            .fn()
-            .mockRejectedValue(new Error('Network offline'))
-
-        initagent(model, bal, state)
-
-        await new Promise((resolve) => setTimeout(resolve, 10))
-
+        testagent(model, { idx: 'test', slv } as any, {} as any)
         expect(slv).toHaveBeenCalledWith({
-            intBit: { idx: 'init-agent-err', dat: 'Network offline' },
+            mytBit: { idx: 'test-agent', val: 1 },
+        })
+    })
+
+    it('should list local agent models', async () => {
+        const model = new AgentModel()
+        const slv = vi.fn()
+        await listagent(model, { idx: 'list', slv } as any, {} as any)
+        expect(slv).toHaveBeenCalledWith({
+            olmBit: {
+                idx: 'list-agent',
+                lst: ['local-cockpit', 'terminal-curses'],
+            },
         })
     })
 })
