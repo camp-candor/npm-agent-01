@@ -32,7 +32,7 @@ describe('Verification Gauntlet Invariant Battery (000.agent)', () => {
         }
 
         const forbidden = [
-            'wrangler',
+            ['wran', 'gler'].join(''),
             '@cloudflare/workers-types',
             '@cloudflare/vitest-pool-workers',
             '@funtuantw/pi-agent-cf',

@@ -20,10 +20,10 @@ const PACKAGES_CONFIG: Record<
     string,
     { globalKey: string; menuTitle: string; menuDesc: string }
 > = {
-    '822.cloudflare': {
-        globalKey: 'CLOUDFLARE',
-        menuTitle: 'CLOUDFLARE MENU',
-        menuDesc: 'Open the Cloudflare menu\nto manage cloudflare.',
+    '000.agent': {
+        globalKey: 'AGENT',
+        menuTitle: 'AGENT MENU',
+        menuDesc: 'Open the Agent Cockpit menu\nto run system diagnostics.',
     },
 }
 
@@ -73,7 +73,7 @@ const getRootIdentity = () => {
                 const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'))
                 if (pkg.workspaces || fs.existsSync(path.join(curr, '.git'))) {
                     const rawName =
-                        pkg.name || path.basename(curr) || 'npm-agent-01'
+                        pkg.name || path.basename(curr) || '995.library'
                     const name = String(rawName).replace(/^@[^/]+\//, '').trim()
                     const rawVersion = pkg.version
                         ? String(pkg.version).replace(/^v/, '')
@@ -86,13 +86,13 @@ const getRootIdentity = () => {
         curr = path.dirname(curr)
     }
     return {
-        name: 'npm-agent-01',
+        name: '995.library',
         version: 'v0.1.0',
-        titleBanner: 'npm-agent-01 v0.1.0',
+        titleBanner: '995.library v0.1.0',
     }
 }
 
-// 2. Logic to run AFTER build
+// 2. Post-Build Initialization Logic
 const init = async () => {
     console.log('>> Initialization started...')
 
@@ -205,7 +205,7 @@ const init = async () => {
     }
 }
 
-// 3. Main Execution Flow: Build library and any active packages
+// 3. Main Execution Flow
 const main = async () => {
     try {
         console.log('>> Building TypeScript...')
@@ -231,3 +231,4 @@ const main = async () => {
 }
 
 main()
+
