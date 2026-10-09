@@ -1,28 +1,92 @@
-import fs from 'fs'
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { MenuModel } from '../98.menu.unit/menu.model.js'
 import * as Act from '../98.menu.unit/menu.action.js'
-import { resolveWorkerDir } from '../98.menu.unit/buz/00.menu.buzz.js'
-import { getBaseUrl } from '../src/cascade.js'
+import {
+    runDoctor,
+    systemInfo,
+    initMenu,
+} from '../98.menu.unit/buz/00.menu.buzz.js'
 
-describe('Agent Menu Toggle Target Mode', () => {
-    beforeEach(() => {
-        delete (global as any).agentBaseUrl
-    })
-
-    afterEach(() => {
-        delete (global as any).agentBaseUrl
-    })
-
-    it('initializes with LIVE mode and canonical activeBaseUrl', () => {
+describe('Local Terminal Cockpit Switchboard (000.agent)', () => {
+    it('initializes with default ONLINE cockpit state', () => {
         const model = new MenuModel()
-        expect(model.targetMode).toBe('LIVE')
-        expect(model.activeBaseUrl).toBe(getBaseUrl())
-        expect(model.localProcess).toBeNull()
+        expect(model.status).toBe('ONLINE')
+        expect(model.doctorPassed).toBe(true)
+        expect(model.idx).toBe('98.menu')
     })
 
-    it('has TOGGLE_TARGET_MODE action defined correctly', () => {
-        const action = new Act.ToggleTargetMode()
-        expect(action.type).toBe('[Menu action] Toggle Target Mode')
+    it('has RUN_DOCTOR and SYSTEM_INFO actions defined correctly', () => {
+        const docAct = new Act.RunDoctor()
+        const sysAct = new Act.SystemInfo()
+        expect(docAct.type).toBe('[Menu action] Run Doctor')
+        expect(sysAct.type).toBe('[Menu action] System Info')
+    })
+
+    it('executes runDoctor buzzer and outputs structured telemetry lines', async () => {
+        const model = new MenuModel()
+        let receivedResult: any = null
+
+        await runDoctor(
+            model,
+            {
+                idx: 'test-doctor',
+                slv: (res: any) => {
+                    receivedResult = res
+                },
+            },
+            {} as any,
+        )
+
+        expect(receivedResult).not.toBeNull()
+        expect(receivedResult.mnuBit.idx).toBe('run-doctor')
+        expect(receivedResult.mnuBit.dat.passed).toBe(true)
+        expect(receivedResult.mnuBit.dat.lines.length).toBeGreaterThan(4)
+        expect(receivedResult.mnuBit.dat.lines[0]).toContain(
+            'Local Environment Audit',
+        )
+        expect(model.doctorPassed).toBe(true)
+    })
+
+    it('executes systemInfo buzzer and captures host architecture', async () => {
+        const model = new MenuModel()
+        let receivedResult: any = null
+
+        await systemInfo(
+            model,
+            {
+                idx: 'test-sys',
+                slv: (res: any) => {
+                    receivedResult = res
+                },
+            },
+            {} as any,
+        )
+
+        expect(receivedResult).not.toBeNull()
+        expect(receivedResult.mnuBit.idx).toBe('system-info')
+        expect(receivedResult.mnuBit.dat.lines.length).toBeGreaterThan(3)
+        expect(receivedResult.mnuBit.dat.lines[0]).toContain(
+            'Hardware & Host Telemetry',
+        )
+    })
+
+    it('dispatches initMenu and sets model status', () => {
+        const model = new MenuModel()
+        let receivedResult: any = null
+
+        initMenu(
+            model,
+            {
+                idx: 'test-init',
+                slv: (res: any) => {
+                    receivedResult = res
+                },
+            },
+            {} as any,
+        )
+
+        expect(receivedResult).not.toBeNull()
+        expect(receivedResult.mnuBit.idx).toBe('init-menu')
+        expect(model.status).toBe('ONLINE')
     })
 })
