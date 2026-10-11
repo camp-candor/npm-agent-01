@@ -5,7 +5,6 @@ import UnitUnit from './01.unit.unit/unit.unit'
 import ActionUnit from './02.action.unit/action.unit'
 import DataUnit from './03.data.unit/data.unit'
 import ServerUnit from './04.server.unit/server.unit'
-import GearsUnit from './05.gears.unit/gears.unit'
 import TerminalUnit from './80.terminal.unit/terminal.unit'
 import GridUnit from './81.grid.unit/grid.unit'
 import ConsoleUnit from './83.console.unit/console.unit'
@@ -25,8 +24,6 @@ import type Data from './03.data.unit/fce/data.interface'
 import { DataModel } from './03.data.unit/data.model'
 import type Server from './04.server.unit/fce/server.interface'
 import { ServerModel } from './04.server.unit/server.model'
-import type Gears from './05.gears.unit/fce/gears.interface'
-import { GearsModel } from './05.gears.unit/gears.model'
 import type Terminal from './80.terminal.unit/fce/terminal.interface'
 import { TerminalModel } from './80.terminal.unit/terminal.model'
 import type Grid from './81.grid.unit/fce/grid.interface'
@@ -50,7 +47,6 @@ export const list: any[] = [
     ActionUnit,
     DataUnit,
     ServerUnit,
-    GearsUnit,
     TerminalUnit,
     GridUnit,
     ConsoleUnit,
@@ -66,7 +62,6 @@ import * as reduceFromUnit from './01.unit.unit/unit.reduce'
 import * as reduceFromAction from './02.action.unit/action.reduce'
 import * as reduceFromData from './03.data.unit/data.reduce'
 import * as reduceFromServer from './04.server.unit/server.reduce'
-import * as reduceFromGears from './05.gears.unit/gears.reduce'
 import * as reduceFromTerminal from './80.terminal.unit/terminal.reduce'
 import * as reduceFromGrid from './81.grid.unit/grid.reduce'
 import * as reduceFromConsole from './83.console.unit/console.reduce'
@@ -82,7 +77,6 @@ export const reducer: any = {
     action: reduceFromAction.reducer,
     data: reduceFromData.reducer,
     server: reduceFromServer.reducer,
-    gears: reduceFromGears.reducer,
     terminal: reduceFromTerminal.reducer,
     grid: reduceFromGrid.reducer,
     console: reduceFromConsole.reducer,
@@ -99,7 +93,6 @@ export default class UnitData implements Model {
     action: Action = new ActionModel()
     data: Data = new DataModel()
     server: Server = new ServerModel()
-    gears: Gears = new GearsModel()
     terminal: Terminal = new TerminalModel()
     grid: Grid = new GridModel()
     console: Console = new ConsoleModel()

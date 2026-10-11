@@ -3,5 +3,5 @@ export default interface DataBit {
     src?: string
     val?: number
     dat?: any
-    slv?: Function
+    slv?: (result: { datBit: Partial<DataBit> }) => void
 }

@@ -1,3 +1,3 @@
 cd..
 cd vcode
-start Code.exe ../995.library
+start Code.exe ../npm-agent-01
