@@ -1,5 +1,5 @@
 {
-  "sagaId": "saga-fs-1792172924515_li0hj",
+  "sagaId": "saga-fs-1792587062274_un7gt",
   "sourceDir": "D:\\trellis\\995.library\\apps\\995.library",
   "status": "RUNNING",
   "targetsCompleted": [
@@ -9,74 +9,66 @@
     "D:\\trellis\\000.repo-bot\\apps\\995.library",
     "D:\\trellis\\000.series-dashboard\\apps\\995.library",
     "D:\\trellis\\000.series-sower-conductor\\apps\\995.library",
-    "D:\\trellis\\000.series-sower-engine\\apps\\995.library",
-    "D:\\trellis\\001.goblin-lore\\apps\\995.library"
+    "D:\\trellis\\000.series-sower-engine\\apps\\995.library"
   ],
   "targetsFailed": [],
   "backups": {
-    "D:\\trellis\\000.camp-candor-cauldron\\apps\\995.library": "D:\\trellis\\000.camp-candor-cauldron\\apps\\.tmp_backup_995_library_1792172926418_hd7g5",
-    "D:\\trellis\\000.goblin-lore\\apps\\995.library": "D:\\trellis\\000.goblin-lore\\apps\\.tmp_backup_995_library_1792172927239_5h2ee",
-    "D:\\trellis\\000.goblin-spatial\\apps\\995.library": "D:\\trellis\\000.goblin-spatial\\apps\\.tmp_backup_995_library_1792172928477_sqcsu",
-    "D:\\trellis\\000.repo-bot\\apps\\995.library": "D:\\trellis\\000.repo-bot\\apps\\.tmp_backup_995_library_1792172933495_8k5xm",
-    "D:\\trellis\\000.series-dashboard\\apps\\995.library": "D:\\trellis\\000.series-dashboard\\apps\\.tmp_backup_995_library_1792172936497_sst1d",
-    "D:\\trellis\\000.series-sower-conductor\\apps\\995.library": "D:\\trellis\\000.series-sower-conductor\\apps\\.tmp_backup_995_library_1792172937695_ig45g",
-    "D:\\trellis\\000.series-sower-engine\\apps\\995.library": "D:\\trellis\\000.series-sower-engine\\apps\\.tmp_backup_995_library_1792172938725_ebxn6",
-    "D:\\trellis\\001.goblin-lore\\apps\\995.library": "D:\\trellis\\001.goblin-lore\\apps\\.tmp_backup_995_library_1792172940402_quq9k"
+    "D:\\trellis\\000.camp-candor-cauldron\\apps\\995.library": "D:\\trellis\\000.camp-candor-cauldron\\apps\\.tmp_backup_995_library_1792587062423_2dqqj",
+    "D:\\trellis\\000.goblin-lore\\apps\\995.library": "D:\\trellis\\000.goblin-lore\\apps\\.tmp_backup_995_library_1792587065052_qbmv9",
+    "D:\\trellis\\000.goblin-spatial\\apps\\995.library": "D:\\trellis\\000.goblin-spatial\\apps\\.tmp_backup_995_library_1792587067060_u76dn",
+    "D:\\trellis\\000.repo-bot\\apps\\995.library": "D:\\trellis\\000.repo-bot\\apps\\.tmp_backup_995_library_1792587072603_12i2k",
+    "D:\\trellis\\000.series-dashboard\\apps\\995.library": "D:\\trellis\\000.series-dashboard\\apps\\.tmp_backup_995_library_1792587073061_c4sbr",
+    "D:\\trellis\\000.series-sower-conductor\\apps\\995.library": "D:\\trellis\\000.series-sower-conductor\\apps\\.tmp_backup_995_library_1792587074177_di0wv",
+    "D:\\trellis\\000.series-sower-engine\\apps\\995.library": "D:\\trellis\\000.series-sower-engine\\apps\\.tmp_backup_995_library_1792587079373_6mxjh"
   },
   "records": {
     "D:\\trellis\\000.camp-candor-cauldron\\apps\\995.library": {
       "targetDir": "D:\\trellis\\000.camp-candor-cauldron\\apps\\995.library",
       "state": "COMPLETED",
-      "backupDir": "D:\\trellis\\000.camp-candor-cauldron\\apps\\.tmp_backup_995_library_1792172926418_hd7g5",
-      "stagingDir": "D:\\trellis\\000.camp-candor-cauldron\\apps\\.tmp_staging_995_library_1792172926418_hd7g5"
+      "backupDir": "D:\\trellis\\000.camp-candor-cauldron\\apps\\.tmp_backup_995_library_1792587062423_2dqqj",
+      "stagingDir": "D:\\trellis\\000.camp-candor-cauldron\\apps\\.tmp_staging_995_library_1792587062423_2dqqj"
     },
     "D:\\trellis\\000.goblin-lore\\apps\\995.library": {
       "targetDir": "D:\\trellis\\000.goblin-lore\\apps\\995.library",
       "state": "COMPLETED",
-      "backupDir": "D:\\trellis\\000.goblin-lore\\apps\\.tmp_backup_995_library_1792172927239_5h2ee",
-      "stagingDir": "D:\\trellis\\000.goblin-lore\\apps\\.tmp_staging_995_library_1792172927239_5h2ee"
+      "backupDir": "D:\\trellis\\000.goblin-lore\\apps\\.tmp_backup_995_library_1792587065052_qbmv9",
+      "stagingDir": "D:\\trellis\\000.goblin-lore\\apps\\.tmp_staging_995_library_1792587065052_qbmv9"
     },
     "D:\\trellis\\000.goblin-spatial\\apps\\995.library": {
       "targetDir": "D:\\trellis\\000.goblin-spatial\\apps\\995.library",
       "state": "COMPLETED",
-      "backupDir": "D:\\trellis\\000.goblin-spatial\\apps\\.tmp_backup_995_library_1792172928477_sqcsu",
-      "stagingDir": "D:\\trellis\\000.goblin-spatial\\apps\\.tmp_staging_995_library_1792172928477_sqcsu"
+      "backupDir": "D:\\trellis\\000.goblin-spatial\\apps\\.tmp_backup_995_library_1792587067060_u76dn",
+      "stagingDir": "D:\\trellis\\000.goblin-spatial\\apps\\.tmp_staging_995_library_1792587067060_u76dn"
     },
     "D:\\trellis\\000.repo-bot\\apps\\995.library": {
       "targetDir": "D:\\trellis\\000.repo-bot\\apps\\995.library",
       "state": "COMPLETED",
-      "backupDir": "D:\\trellis\\000.repo-bot\\apps\\.tmp_backup_995_library_1792172933495_8k5xm",
-      "stagingDir": "D:\\trellis\\000.repo-bot\\apps\\.tmp_staging_995_library_1792172933495_8k5xm"
+      "backupDir": "D:\\trellis\\000.repo-bot\\apps\\.tmp_backup_995_library_1792587072603_12i2k",
+      "stagingDir": "D:\\trellis\\000.repo-bot\\apps\\.tmp_staging_995_library_1792587072603_12i2k"
     },
     "D:\\trellis\\000.series-dashboard\\apps\\995.library": {
       "targetDir": "D:\\trellis\\000.series-dashboard\\apps\\995.library",
       "state": "COMPLETED",
-      "backupDir": "D:\\trellis\\000.series-dashboard\\apps\\.tmp_backup_995_library_1792172936497_sst1d",
-      "stagingDir": "D:\\trellis\\000.series-dashboard\\apps\\.tmp_staging_995_library_1792172936497_sst1d"
+      "backupDir": "D:\\trellis\\000.series-dashboard\\apps\\.tmp_backup_995_library_1792587073061_c4sbr",
+      "stagingDir": "D:\\trellis\\000.series-dashboard\\apps\\.tmp_staging_995_library_1792587073061_c4sbr"
     },
     "D:\\trellis\\000.series-sower-conductor\\apps\\995.library": {
       "targetDir": "D:\\trellis\\000.series-sower-conductor\\apps\\995.library",
       "state": "COMPLETED",
-      "backupDir": "D:\\trellis\\000.series-sower-conductor\\apps\\.tmp_backup_995_library_1792172937695_ig45g",
-      "stagingDir": "D:\\trellis\\000.series-sower-conductor\\apps\\.tmp_staging_995_library_1792172937695_ig45g"
+      "backupDir": "D:\\trellis\\000.series-sower-conductor\\apps\\.tmp_backup_995_library_1792587074177_di0wv",
+      "stagingDir": "D:\\trellis\\000.series-sower-conductor\\apps\\.tmp_staging_995_library_1792587074177_di0wv"
     },
     "D:\\trellis\\000.series-sower-engine\\apps\\995.library": {
       "targetDir": "D:\\trellis\\000.series-sower-engine\\apps\\995.library",
       "state": "COMPLETED",
-      "backupDir": "D:\\trellis\\000.series-sower-engine\\apps\\.tmp_backup_995_library_1792172938725_ebxn6",
-      "stagingDir": "D:\\trellis\\000.series-sower-engine\\apps\\.tmp_staging_995_library_1792172938725_ebxn6"
-    },
-    "D:\\trellis\\001.goblin-lore\\apps\\995.library": {
-      "targetDir": "D:\\trellis\\001.goblin-lore\\apps\\995.library",
-      "state": "COMPLETED",
-      "backupDir": "D:\\trellis\\001.goblin-lore\\apps\\.tmp_backup_995_library_1792172940402_quq9k",
-      "stagingDir": "D:\\trellis\\001.goblin-lore\\apps\\.tmp_staging_995_library_1792172940402_quq9k"
+      "backupDir": "D:\\trellis\\000.series-sower-engine\\apps\\.tmp_backup_995_library_1792587079373_6mxjh",
+      "stagingDir": "D:\\trellis\\000.series-sower-engine\\apps\\.tmp_staging_995_library_1792587079373_6mxjh"
     },
     "D:\\trellis\\npm-agent-01\\apps\\995.library": {
       "targetDir": "D:\\trellis\\npm-agent-01\\apps\\995.library",
       "state": "PENDING"
     }
   },
-  "createdAt": "2026-10-16T17:48:44.515Z",
-  "updatedAt": "2026-10-16T17:49:03.634Z"
+  "createdAt": "2026-10-21T12:51:02.274Z",
+  "updatedAt": "2026-10-21T12:51:20.977Z"
 }
