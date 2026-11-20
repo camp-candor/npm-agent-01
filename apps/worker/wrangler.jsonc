@@ -30,6 +30,7 @@
     "env": {
         "staging": {
             "name": "npm-agent-01-staging",
+            "workers_dev": true,
             "ai": {
                 "binding": "AI",
             },
