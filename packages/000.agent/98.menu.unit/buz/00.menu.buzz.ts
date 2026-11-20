@@ -234,9 +234,9 @@ export const updateMenu = async (cpy: MenuModel, bal: MenuBit, ste: State) => {
             : 'TARGET: [LIVE] -> Switch to LIVE'
 
     const lst = [
-        ActOlm.UPDATE_agent.split(']')[1],
-        ActOlm.TEST_agent.split(']')[1],
-        ActOlm.LIST_agent.split(']')[1],
+        ActOlm.UPDATE_AGENT.split(']')[1],
+        ActOlm.TEST_AGENT.split(']')[1],
+        ActOlm.LIST_AGENT.split(']')[1],
         'GET / (Health Check)',
         'GET /oracle (The Oracle)',
         'ROOT MENU',
@@ -269,22 +269,22 @@ export const updateMenu = async (cpy: MenuModel, bal: MenuBit, ste: State) => {
     }
 
     switch (src) {
-        case ActOlm.UPDATE_agent.split(']')[1]:
-            bit = await ste.hunt(ActOlm.UPDATE_agent, {
+        case ActOlm.UPDATE_AGENT.split(']')[1]:
+            bit = await ste.hunt(ActOlm.UPDATE_AGENT, {
                 content: 'agent Menu Selected',
             })
             bit = await global.LIBRARY.hunt(PRINT_MENU, bit)
             break
 
-        case ActOlm.TEST_agent.split(']')[1]:
-            bit = await ste.hunt(ActOlm.TEST_agent, {
+        case ActOlm.TEST_AGENT.split(']')[1]:
+            bit = await ste.hunt(ActOlm.TEST_AGENT, {
                 content: 'agent Menu Selected',
             })
             bit = await global.LIBRARY.hunt(PRINT_MENU, bit)
             break
 
-        case ActOlm.LIST_agent.split(']')[1]:
-            bit = await ste.hunt(ActOlm.LIST_agent, {})
+        case ActOlm.LIST_AGENT.split(']')[1]:
+            bit = await ste.hunt(ActOlm.LIST_AGENT, {})
             const modelList = bit.olmBit.lst
 
             if (modelList.length === 0) {

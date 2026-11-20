@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
-import { createAgentWorker } from '@funtuantw/pi-agent-cf'
 import { coreTools, type Env } from './tools.core.js'
+import agent, { ActAgt, getActiveWorker } from '@camp_candor/000.agent/hunt'
 // import { customTools } from './tools.custom.js'
 
 // ----------------------------------------------------------------------------
@@ -22,11 +22,7 @@ const cfModel: any = {
     },
 }
 
-const dynamicWorker = createAgentWorker<Env>({
-    systemPrompt: (env) => {
-        cfModel.baseUrl = `https://api.cloudflare.com/client/v4/accounts/${env.CLOUDFLARE_ACCOUNT_ID}/ai/v1`
-
-        return `
+const agentPrompt = `
 You are repo-bot, the deterministic DevOps Control Plane and Git Mechanic.
 You possess a suite of deterministic Git and CI surveillance instruments:
 1. 'get_commit_sha': Captures the immutable base rollback anchor (S_clean) before modifying branches.
@@ -39,14 +35,11 @@ OPERATIONAL INVARIANTS:
 - Always capture S_clean via get_commit_sha before creating branches.
 - Never modify files directly on main or production tracking branches.
 - Output deterministic, structured summaries following tool execution.
-        `.trim()
-    },
-    model: cfModel,
-    tools: (env) => [...coreTools(env)],
-    getApiKey: (provider, env) => {
-        if (provider === 'openai') return env.CLOUDFLARE_API_TOKEN
-        return undefined
-    },
+`
+
+agent.hunt(ActAgt.INIT_AGENT, {
+    src: agentPrompt,
+    dat: { cfModel, coreTools },
 })
 
 // ----------------------------------------------------------------------------
@@ -59,44 +52,23 @@ const app = new Hono<{ Bindings: Env }>()
 app.get('/', (c) => c.text('REPO-BOT EDGE CONTROL PLANE IS LIVE'))
 
 // Structured Diagnostics Endpoint (Satisfies packages/000.agent switchboard probe)
-app.get('/health', (c) =>
-    c.json(
-        {
-            status: 'healthy',
-            service: 'npm-agent-01-worker',
-            timestamp: new Date().toISOString(),
-            hasGithubToken: Boolean(c.env.GITHUB_TOKEN),
-            aiGateway: c.env.CLOUDFLARE_AI_GATEWAY || 'default',
-        },
-        200,
-    ),
-)
+app.get('/health', async (c) => {
+    const bit = await agent.hunt(ActAgt.HEALTH_AGENT, { dat: { c } })
+    return c.json(bit.agnBit.dat, 200)
+})
 
 // Fast-Path Oracle Endpoint
 app.get('/oracle', async (c) => {
-    try {
-        const prompt = c.req.query('prompt') || 'Inspect system status'
-        const response = await c.env.AI.run('@cf/meta/llama-3.2-3b-instruct', {
-            messages: [
-                { role: 'user', content: `${prompt}. Output ONLY raw JSON.` },
-            ],
-        })
-        return c.text(response.response || JSON.stringify(response))
-    } catch (error: any) {
-        console.error('Oracle Error:', error)
-        return c.text(`Error: ${error.message}`, 500)
-    }
+    const src = '@cf/meta/llama-3.2-3b-instruct'
+    const bit = await agent.hunt(ActAgt.ORACLE_AGENT, { src, dat: { c } })
+    return c.text(bit.agnBit.dat)
 })
 
 // Durable Object Session Ingress
-app.all('/*', async (c) => {
-    if (!dynamicWorker.handler.fetch) return c.text('Handler missing', 500)
-    return await dynamicWorker.handler.fetch(
-        c.req.raw as any,
-        c.env,
-        c.executionCtx,
-    )
+app.all('/agent/*', async (c) => {
+    const bit = await agent.hunt(ActAgt.CATCHALL_AGENT, { dat: { c } })
+    return bit.agnBit.dat
 })
 
-export const AgentSessionDO = dynamicWorker.AgentSessionDO
+export const AgentSessionDO = getActiveWorker().AgentSessionDO
 export default app

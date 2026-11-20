@@ -1,72 +1,29 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { initagent } from './buz/agent.buzz.js'
+import { describe, it, expect, vi } from 'vitest'
+import { initAgent } from './buz/agent.buzz.js'
 import { AgentModel } from './agent.model.js'
-import { getBaseUrl } from '../src/cascade.js'
 
 describe('agent unit buzzers', () => {
-    const originalFetch = globalThis.fetch
-
-    beforeEach(() => {
-        vi.restoreAllMocks()
-        delete (global as any).agentBaseUrl
-    })
-
-    afterEach(() => {
-        globalThis.fetch = originalFetch
-        delete (global as any).agentBaseUrl
-    })
-
-    it('should query health endpoint on initagent', async () => {
+    it('should initialize agent worker and resolve agnBit on initAgent', () => {
         const model = new AgentModel()
         const state = {} as any
         const slv = vi.fn()
-        const bal = { idx: 'test', slv } as any
+        const cfModel = { id: '@cf/meta/llama-3.2-3b-instruct', baseUrl: '' }
+        const bal = {
+            src: 'System prompt',
+            dat: { cfModel, coreTools: () => [] },
+            slv,
+        } as any
 
-        const expectedUrl = `${getBaseUrl()}/health`
-        const mockHealth = { status: 'healthy', service: 'npm-agent-01-worker' }
+        const result = initAgent(model, bal, state)
 
-        globalThis.fetch = vi.fn().mockImplementation((url: string) => {
-            if (url === expectedUrl) {
-                return Promise.resolve({
-                    ok: true,
-                    json: async () => mockHealth,
-                } as any)
-            }
-            return Promise.reject(new Error(`Unexpected url: ${url}`))
-        })
-
-        initagent(model, bal, state)
-
-        await new Promise((resolve) => setTimeout(resolve, 10))
-
-        expect(globalThis.fetch).toHaveBeenCalledWith(expectedUrl)
+        expect(result.agent).toBeDefined()
+        expect(typeof result.agent.AgentSessionDO).toBe('function')
+        expect(typeof result.agent.handler.fetch).toBe('function')
         expect(slv).toHaveBeenCalledWith({
-            intBit: {
+            agnBit: {
                 idx: 'init-agent',
-                dat: {
-                    status: 'connected',
-                    health: mockHealth,
-                },
+                dat: result.agent,
             },
-        })
-    })
-
-    it('should handle fetch errors gracefully on initagent', async () => {
-        const model = new AgentModel()
-        const state = {} as any
-        const slv = vi.fn()
-        const bal = { idx: 'test', slv } as any
-
-        globalThis.fetch = vi
-            .fn()
-            .mockRejectedValue(new Error('Network offline'))
-
-        initagent(model, bal, state)
-
-        await new Promise((resolve) => setTimeout(resolve, 10))
-
-        expect(slv).toHaveBeenCalledWith({
-            intBit: { idx: 'init-agent-err', dat: 'Network offline' },
         })
     })
 })

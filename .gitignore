@@ -164,6 +164,7 @@ docs
 # Un-ignore css & vite module declarations
 !vite-env.d.ts
 !css.d.ts
+!packages/000.agent/hunt.d.ts
 
 # Un-ignore the @snailicid3/types source package
 !packages/types/
