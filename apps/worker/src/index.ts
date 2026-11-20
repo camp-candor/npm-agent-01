@@ -49,7 +49,10 @@ agent.hunt(ActAgt.INIT_AGENT, {
 const app = new Hono<{ Bindings: Env }>()
 
 // Root Health & Verification Endpoint
-app.get('/', (c) => c.text('REPO-BOT EDGE CONTROL PLANE IS LIVE'))
+app.get('/', async (c) => {
+    const bit = await agent.hunt(ActAgt.TEST_AGENT, {})
+    return c.text(`NPM AGENT EDGE CONTROL PLANE IS LIVE ${JSON.stringify(bit)}`)
+})
 
 // Structured Diagnostics Endpoint (Satisfies packages/000.agent switchboard probe)
 app.get('/health', async (c) => {
