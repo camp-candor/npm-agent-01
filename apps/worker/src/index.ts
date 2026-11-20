@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { coreTools, type Env } from './tools.core.js'
-import agent, { ActAgt, getActiveWorker } from '@camp_candor/000.agent/hunt'
+import agent, { ActAgt, getActiveWorker } from '@camp_candor/100.agent/hunt'
 // import { customTools } from './tools.custom.js'
 
 // ----------------------------------------------------------------------------

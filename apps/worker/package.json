@@ -13,7 +13,7 @@
         "test:audit:staging": "vitest run -c vitest.audit.config.ts"
     },
     "dependencies": {
-        "@camp_candor/000.agent": "*",
+        "@camp_candor/100.agent": "*",
         "@clerk/backend": "3.0.1",
         "@funtuantw/pi-agent-cf": "latest",
         "@sinclair/typebox": "latest",

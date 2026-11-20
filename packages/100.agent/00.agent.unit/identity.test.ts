@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { getRepoIdentity, resolveRootPackageJson } from '../src/identity.js'
 
-describe('Dynamic Repository Identity Resolver (000.agent)', () => {
+describe('Dynamic Repository Identity Resolver (100.agent)', () => {
     it('discovers root package.json and extracts dynamic identity', () => {
         const { pkg } = resolveRootPackageJson()
         expect(pkg.name).toBeDefined()
@@ -9,11 +9,12 @@ describe('Dynamic Repository Identity Resolver (000.agent)', () => {
     })
 
     it('formats title banner using repo name followed by version number', () => {
+        const { pkg } = resolveRootPackageJson()
         const identity = getRepoIdentity()
         const legacyToken = ['repo', 'bot'].join('-')
         expect(identity.name.toLowerCase()).not.toContain(legacyToken)
-        expect(identity.name).toBe('npm-agent-01')
-        expect(identity.titleBanner).toMatch(/^npm-agent-01 v\d+\.\d+\.\d+$/)
+        expect(identity.name).toBe(pkg.name)
+        expect(identity.titleBanner).toBe(`${pkg.name} v${pkg.version}`)
     })
 
     it('dynamically adapts when run against a downstream repo manifest', () => {

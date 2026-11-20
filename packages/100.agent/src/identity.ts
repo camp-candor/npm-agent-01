@@ -43,7 +43,7 @@ export function resolveRootPackageJson(startDir: string = process.cwd()): {
     }
 
     return {
-        pkg: { name: 'npm-agent-01', version: '0.1.0' },
+        pkg: { name: 'contact-bot', version: '0.1.0' },
         rootDir: process.cwd(),
     }
 }
@@ -59,9 +59,9 @@ export function getRepoIdentity(startDir?: string): RepoIdentity {
     const { pkg, rootDir } = resolveRootPackageJson(startDir)
 
     const rawName =
-        pkg.name || pkg.label || path.basename(rootDir) || 'npm-agent-01'
+        pkg.name || pkg.label || path.basename(rootDir) || 'contact-bot'
 
-    // Strip scope (@camp_candor/npm-agent-01 -> npm-agent-01)
+    // Strip scope (@camp_candor/contact-bot -> contact-bot)
     const name = String(rawName)
         .replace(/^@[^/]+\//, '')
         .trim()
@@ -71,7 +71,7 @@ export function getRepoIdentity(startDir?: string): RepoIdentity {
         : '0.1.0'
     const version = `v${rawVersion}`
 
-    // Formatted banner: "npm-agent-01 v0.1.1" or "NPM-AGENT-01 V0.1.1"
+    // Formatted banner: "contact-bot v0.1.1" or "CONTACT-BOT V0.1.1"
     const titleBanner = `${name} ${version}`
 
     const identity: RepoIdentity = {

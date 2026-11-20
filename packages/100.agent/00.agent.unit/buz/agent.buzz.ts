@@ -2,11 +2,20 @@ import { AgentModel } from '../agent.model.js'
 import AgentBit from '../fce/agent.bit.js'
 import State from '../../99.core/state.js'
 import { getBaseUrl, getBaseWsUrl } from '../../src/cascade.js'
+
 import { createAgentWorker } from '@funtuantw/pi-agent-cf'
 
 const agent = {
     list: async () => ({ models: [] as any[] }),
 }
+
+//import contactSim from '@camp_candor/010.contact/hunt'
+//import * as ActCnk from '@camp_candor/010.contact/action'
+// import { customTools } from './tools.custom.js'
+
+// ----------------------------------------------------------------------------
+// :: DETERMINISTIC LLM & DEVOPS SYSTEM PROMPT
+// ----------------------------------------------------------------------------
 
 let activeWorker: any = null
 
@@ -178,9 +187,9 @@ export const healthAgent = async (
     bal: AgentBit,
     ste: State,
 ) => {
-    const dat = {
+    var dat = {
         status: 'healthy',
-        service: 'npm-agent-01-worker',
+        service: '000-contact-bot-worker',
         timestamp: new Date().toISOString(),
         hasGithubToken: Boolean(bal.dat.c.env.GITHUB_TOKEN),
         aiGateway: bal.dat.c.env.CLOUDFLARE_AI_GATEWAY || 'default',
@@ -239,8 +248,8 @@ export const oracleAgent = async (
     bal: AgentBit,
     ste: State,
 ) => {
-    const context = bal.dat.c
-    const modelName = bal.src
+    var context = bal.dat.c
+    var modelName = bal.src
 
     try {
         const prompt = context.req.query('prompt') || 'Inspect system status'
